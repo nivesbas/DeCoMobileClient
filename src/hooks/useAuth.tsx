@@ -9,6 +9,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   customerId: string | null;
+  isRestoredSession: boolean; // true if session was restored from storage (needs biometric)
 }
 
 interface AuthContextValue extends AuthState {
@@ -24,24 +25,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     isAuthenticated: false,
     customerId: null,
+    isRestoredSession: false,
   });
 
   // Check stored auth on mount
   useEffect(() => {
     (async () => {
       try {
-        const [token, customerId] = await Promise.all([
+        const [token, customerId, expiresAt] = await Promise.all([
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.ACCESS_TOKEN),
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.CUSTOMER_ID),
+          SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT),
         ]);
 
+        console.log('[Auth] Restore check:', {
+          hasToken: !!token,
+          customerId,
+          expiresAt,
+          now: Date.now(),
+          expired: expiresAt ? Date.now() > Number(expiresAt) : 'no expiry',
+        });
+
         if (token && customerId) {
-          setState({ isLoading: false, isAuthenticated: true, customerId });
+          // Token exists — check if expired and try refresh
+          if (expiresAt && Date.now() > Number(expiresAt)) {
+            console.log('[Auth] Access token expired, attempting refresh...');
+            const refreshed = await authService.refreshToken();
+            if (refreshed) {
+              console.log('[Auth] Token refreshed successfully');
+              setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+            } else {
+              console.log('[Auth] Refresh failed, user must re-login');
+              setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+            }
+          } else {
+            setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+          }
         } else {
-          setState({ isLoading: false, isAuthenticated: false, customerId: null });
+          setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
         }
-      } catch {
-        setState({ isLoading: false, isAuthenticated: false, customerId: null });
+      } catch (err) {
+        console.error('[Auth] Restore failed:', err);
+        setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
       }
     })();
   }, []);
@@ -51,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokenRefreshHandler(async () => {
       const success = await authService.refreshToken();
       if (!success) {
-        setState({ isLoading: false, isAuthenticated: false, customerId: null });
+        setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
       }
       return success;
     });
@@ -64,14 +89,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtp = useCallback(async (customerId: string, otpCode: string) => {
     const result = await authService.verifyOtp(customerId, otpCode);
     if (result.success) {
-      setState({ isLoading: false, isAuthenticated: true, customerId });
+      // Fresh login — no biometric needed
+      setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: false });
     }
     return result;
   }, []);
 
   const logout = useCallback(async () => {
     await authService.logout();
-    setState({ isLoading: false, isAuthenticated: false, customerId: null });
+    setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
   }, []);
 
   return (

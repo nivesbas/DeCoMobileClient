@@ -42,6 +42,8 @@ const translations = {
     messages_empty: 'Nemate poruka. Pošaljite prvu poruku Vašem operateru.',
 
     // Common
+    back: 'Nazad',
+    retry: 'Pokušajte ponovo',
     error_generic: 'Došlo je do greške. Pokušajte ponovo.',
     error_network: 'Nema internet konekcije.',
     logout: 'Odjavi se',
@@ -87,6 +89,8 @@ const translations = {
     messages_send: 'Send',
     messages_empty: 'No messages yet. Send your first message to your operator.',
 
+    back: 'Back',
+    retry: 'Try again',
     error_generic: 'Something went wrong. Please try again.',
     error_network: 'No internet connection.',
     logout: 'Log out',
