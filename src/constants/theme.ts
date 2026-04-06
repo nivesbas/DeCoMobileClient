@@ -1,36 +1,36 @@
 export const COLORS = {
-  // Brand
-  primary: '#1B4D7A',
-  primaryDark: '#0F3255',
-  primaryLight: '#2A6DAB',
+  // Brand — aligned with DeCo web frontend
+  primary: '#993333',
+  primaryDark: '#662222',
+  primaryLight: '#B84D4D',
 
   // Accent
-  accent: '#E8A838',
-  accentDark: '#C48A20',
+  accent: '#660000',
+  accentLight: '#996666',
 
   // Status
-  success: '#2E7D32',
-  warning: '#ED6C02',
-  error: '#D32F2F',
+  success: '#2D9D4F',
+  warning: '#FFB84D',
+  error: '#E63333',
   info: '#0288D1',
 
   // Neutrals
-  background: '#F5F6FA',
+  background: '#F5F5F5',
   surface: '#FFFFFF',
   surfaceElevated: '#FFFFFF',
-  border: '#E0E4EB',
-  borderLight: '#F0F2F5',
+  border: '#CCCCCC',
+  borderLight: '#E0E0E0',
 
   // Text
-  textPrimary: '#1A1D26',
-  textSecondary: '#5A6070',
-  textMuted: '#8E95A5',
+  textPrimary: '#262626',
+  textSecondary: '#5A5A5A',
+  textMuted: '#999999',
   textOnPrimary: '#FFFFFF',
-  textOnAccent: '#1A1D26',
+  textOnAccent: '#FFFFFF',
 
   // Misc
   overlay: 'rgba(0, 0, 0, 0.5)',
-  skeleton: '#E8EBF0',
+  skeleton: '#E8E8E8',
 } as const;
 
 export const SPACING = {
@@ -53,9 +53,9 @@ export const FONT_SIZES = {
 } as const;
 
 export const BORDER_RADIUS = {
-  sm: 6,
-  md: 10,
-  lg: 16,
-  xl: 24,
+  sm: 4,
+  md: 6,
+  lg: 8,
+  xl: 12,
   full: 999,
 } as const;

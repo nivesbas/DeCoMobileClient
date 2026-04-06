@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
@@ -43,13 +43,21 @@ export default function RegisterScreen({ onOtpSent }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
+        {/* Logo & branding */}
         <View style={styles.header}>
-          <Text style={styles.logo}>DeCo</Text>
-          <Text style={styles.title}>{t('register_title')}</Text>
+          <Image
+            source={require('../../assets/images/deco-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.tagline}>Superior Control — Superior Results</Text>
           <Text style={styles.subtitle}>{t('register_subtitle')}</Text>
         </View>
 
+        {/* Form card */}
         <View style={styles.form}>
+          <Text style={styles.formTitle}>{t('register_title')}</Text>
+
           <Text style={styles.label}>{t('customer_id_label')}</Text>
           <TextInput
             style={styles.input}
@@ -86,6 +94,16 @@ export default function RegisterScreen({ onOtpSent }: Props) {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Powered by</Text>
+          <Image
+            source={require('../../assets/images/uril-logo.png')}
+            style={styles.urilLogo}
+            resizeMode="contain"
+          />
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -103,24 +121,23 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.xl,
   },
   logo: {
-    fontSize: 42,
-    fontWeight: '800',
-    color: COLORS.primary,
-    letterSpacing: 2,
-    marginBottom: SPACING.sm,
+    height: 60,
+    width: 200,
+    marginBottom: SPACING.md,
   },
-  title: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+  tagline: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
     marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textMuted,
   },
   form: {
     backgroundColor: COLORS.surface,
@@ -128,9 +145,15 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 3,
+  },
+  formTitle: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
   },
   label: {
     fontSize: FONT_SIZES.sm,
@@ -141,7 +164,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.md,
     fontSize: FONT_SIZES.lg,
     color: COLORS.textPrimary,
@@ -150,17 +173,32 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.md,
     alignItems: 'center',
     marginTop: SPACING.xl,
   },
   buttonDisabled: {
-    backgroundColor: COLORS.textMuted,
+    opacity: 0.5,
   },
   buttonText: {
     color: COLORS.textOnPrimary,
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: SPACING.xl,
+    gap: SPACING.sm,
+  },
+  footerText: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textMuted,
+  },
+  urilLogo: {
+    height: 16,
+    width: 60,
   },
 });

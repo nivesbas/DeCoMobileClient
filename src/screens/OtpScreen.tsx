@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
@@ -51,7 +51,6 @@ export default function OtpScreen({ customerId, phoneNumber, onBack }: Props) {
           onBack();
         }
       }
-      // On success, AuthProvider updates state → navigation changes automatically
     } catch (error: any) {
       Alert.alert('', error.message ?? t('error_generic'));
       setCode('');
@@ -85,10 +84,15 @@ export default function OtpScreen({ customerId, phoneNumber, onBack }: Props) {
     >
       <View style={styles.content}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backText}>← Nazad</Text>
+          <Text style={styles.backText}>{'←'} Nazad</Text>
         </TouchableOpacity>
 
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/deco-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>{t('otp_title')}</Text>
           <Text style={styles.subtitle}>
             {t('otp_subtitle')} {maskedPhone}
@@ -165,6 +169,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
+  logo: {
+    height: 40,
+    width: 140,
+    marginBottom: SPACING.md,
+  },
   title: {
     fontSize: FONT_SIZES.xxl,
     fontWeight: '700',
@@ -182,14 +191,14 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 3,
     alignItems: 'center',
   },
   otpInput: {
     backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.md,
     fontSize: 32,
     fontWeight: '700',
@@ -206,14 +215,14 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.sm,
     padding: SPACING.md,
     alignItems: 'center',
     marginTop: SPACING.lg,
     width: '100%',
   },
   buttonDisabled: {
-    backgroundColor: COLORS.textMuted,
+    opacity: 0.5,
   },
   buttonText: {
     color: COLORS.textOnPrimary,
