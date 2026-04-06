@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "DeCoClientApp",
+    "name": "DeCo",
     "slug": "DeCoClientApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,21 +10,25 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B4D7A"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "rs.uril.deco.client",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Koristimo Face ID za brzu prijavu."
+      }
     },
     "android": {
+      "package": "rs.uril.deco.client",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1B4D7A"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
