@@ -55,7 +55,6 @@ export default function DebtDetailScreen({ route }: Props) {
 
       {/* Amounts */}
       <View style={styles.card}>
-        <InfoRow label={t('debt_original')} value={formatAmount(data.originalAmount, data.currency)} />
         <InfoRow label={t('debt_outstanding')} value={formatAmount(data.outstandingAmount, data.currency)} bold />
         <InfoRow
           label={t('debt_due')}
@@ -69,7 +68,7 @@ export default function DebtDetailScreen({ route }: Props) {
       {/* Dates */}
       <View style={styles.card}>
         <InfoRow label={t('debt_contract_date')} value={formatDate(data.contractDate)} />
-        <InfoRow label={t('debt_maturity_date')} value={formatDate(data.maturityDate)} />
+        <InfoRow label={t('debt_due_date')} value={formatDate(data.dueDate)} />
       </View>
 
       {/* Payments */}

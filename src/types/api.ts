@@ -80,13 +80,12 @@ export interface DebtItem {
 export interface DebtDetail {
   loanId: string;
   productName: string;
-  originalAmount: number;
   outstandingAmount: number;
   dueAmount: number;
   currency: string;
   daysPastDue: number;
   contractDate?: string;
-  maturityDate?: string;
+  dueDate?: string;
   recentPayments: PaymentHistoryItem[];
 }
 

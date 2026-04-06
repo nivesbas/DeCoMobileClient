@@ -27,12 +27,11 @@ const translations = {
 
     // Debt
     debt_detail_title: 'Detalji duga',
-    debt_original: 'Originalni iznos',
     debt_outstanding: 'Preostalo',
     debt_due: 'Dospelo',
     debt_dpd: 'Dana kašnjenja',
     debt_contract_date: 'Datum ugovora',
-    debt_maturity_date: 'Datum dospeća',
+    debt_due_date: 'Datum dospeća',
     debt_payments: 'Poslednje uplate',
     debt_no_payments: 'Nema evidentianih uplata.',
 
@@ -75,12 +74,11 @@ const translations = {
     home_no_debts: 'No active debts.',
 
     debt_detail_title: 'Debt Details',
-    debt_original: 'Original amount',
     debt_outstanding: 'Outstanding',
     debt_due: 'Due',
     debt_dpd: 'Days past due',
     debt_contract_date: 'Contract date',
-    debt_maturity_date: 'Maturity date',
+    debt_due_date: 'Due date',
     debt_payments: 'Recent payments',
     debt_no_payments: 'No payments recorded.',
 
