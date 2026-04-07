@@ -115,6 +115,7 @@ export interface MessageHistoryItem {
   content: string;
   timestamp: string;
   isRead: boolean;
+  operatorName?: string;
 }
 
 export interface MessageHistoryResponse {

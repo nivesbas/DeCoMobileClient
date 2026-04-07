@@ -71,6 +71,9 @@ export default function MessagesScreen() {
         styles.messageBubble,
         isOutbound ? styles.bubbleLeft : styles.bubbleRight,
       ]}>
+        {isOutbound && item.operatorName && (
+          <Text style={styles.operatorName}>{item.operatorName}</Text>
+        )}
         <Text style={[
           styles.messageText,
           isOutbound ? styles.textLeft : styles.textRight,
@@ -181,6 +184,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     backgroundColor: COLORS.primary,
     borderBottomRightRadius: SPACING.xs,
+  },
+  operatorName: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.primary,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   messageText: {
     fontSize: FONT_SIZES.md,
