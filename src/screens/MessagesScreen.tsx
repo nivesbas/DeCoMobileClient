@@ -1,37 +1,78 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Keyboard, BackHandler,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { sendMessage, getMessageHistory } from '../services/messageService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { MessageHistoryItem } from '../types/api';
 
-export default function MessagesScreen() {
+const POLL_INTERVAL_MS = 5000; // refresh every 5 seconds
+
+interface Props {
+  onBack: () => void;
+}
+
+export default function MessagesScreen({ onBack }: Props) {
   const [messages, setMessages] = useState<MessageHistoryItem[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = useCallback(async (silent = false) => {
     try {
       const result = await getMessageHistory(50);
-      setMessages(result.messages.reverse()); // Oldest first for chat view
+      setMessages(result.messages.reverse());
     } catch (error: any) {
-      Alert.alert('', error.message ?? t('error_generic'));
+      if (!silent) {
+        Alert.alert('', error.message ?? t('error_generic'));
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchMessages();
-    }, [fetchMessages]),
-  );
+  // Initial fetch
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Poll for new messages every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => fetchMessages(true), POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
+
+  // Android back gesture → go back to Home
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true;
+    });
+    return () => handler.remove();
+  }, [onBack]);
+
+  // Track keyboard visibility for Android
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+        setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 150);
+      },
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSend = async () => {
     const text = inputText.trim();
@@ -43,10 +84,9 @@ export default function MessagesScreen() {
     try {
       const result = await sendMessage(text);
 
-      // Optimistically add to local list
       const newMessage: MessageHistoryItem = {
         messageId: result.messageId,
-        direction: 'inbound', // Client's message is "inbound" from operator's perspective
+        direction: 'inbound',
         content: text,
         timestamp: result.timestamp,
         isRead: false,
@@ -58,14 +98,14 @@ export default function MessagesScreen() {
       }, 100);
     } catch (error: any) {
       Alert.alert('', error.message ?? t('error_generic'));
-      setInputText(text); // Restore on failure
+      setInputText(text);
     } finally {
       setSending(false);
     }
   };
 
   const renderMessage = ({ item }: { item: MessageHistoryItem }) => {
-    const isOutbound = item.direction === 'outbound'; // From operator
+    const isOutbound = item.direction === 'outbound';
     return (
       <View style={[
         styles.messageBubble,
@@ -104,9 +144,18 @@ export default function MessagesScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior="padding"
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
+      {/* Header bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={onBack}>
+          <Text style={styles.backText}>{'←'} {t('back') ?? 'Nazad'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerBarTitle}>{t('messages_title')}</Text>
+        <View style={{ width: 60 }} />
+      </View>
+
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -157,6 +206,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.background,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+    paddingTop: 56,
+    backgroundColor: COLORS.primary,
+  },
+  backText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textOnPrimary,
+    fontWeight: '600',
+  },
+  headerBarTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.textOnPrimary,
   },
   messageList: {
     padding: SPACING.md,

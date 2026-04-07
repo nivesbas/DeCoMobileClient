@@ -109,9 +109,18 @@ async function request<T>(
       throw new ApiError(429, `Too many requests. Retry after ${retryAfter ?? '?'} seconds.`);
     }
 
-    const data = await response.json();
+    const text = await response.text();
+    let data: any;
+
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      console.error(`[API] Invalid JSON from ${method} ${path}:`, text.slice(0, 500));
+      throw new ApiError(response.status, 'Invalid response from server.');
+    }
 
     if (!response.ok) {
+      console.warn(`[API] ${method} ${path} → ${response.status}:`, data?.message);
       throw new ApiError(
         response.status,
         data?.message ?? `Request failed with status ${response.status}`,

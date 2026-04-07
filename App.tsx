@@ -8,6 +8,8 @@ import OtpScreen from './src/screens/OtpScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import DebtDetailScreen from './src/screens/DebtDetailScreen';
 import MessagesScreen from './src/screens/MessagesScreen';
+import PromiseScreen from './src/screens/PromiseScreen';
+import PaymentPlanScreen from './src/screens/PaymentPlanScreen';
 import BiometricLockScreen from './src/screens/BiometricLockScreen';
 import { COLORS } from './src/constants/theme';
 
@@ -16,7 +18,9 @@ type Screen =
   | { name: 'otp'; customerId: string; phoneNumber: string }
   | { name: 'home' }
   | { name: 'debtDetail'; loanId: string }
-  | { name: 'messages' };
+  | { name: 'messages' }
+  | { name: 'promise'; loanId?: string }
+  | { name: 'paymentPlan'; lid: number };
 
 function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
@@ -101,16 +105,37 @@ function AppContent() {
     );
   }
 
+  if (screen.name === 'promise') {
+    return (
+      <PromiseScreen
+        onBack={goBack}
+        onSuccess={() => setScreen({ name: 'home' })}
+        preselectedLoanId={screen.loanId}
+      />
+    );
+  }
+
+  if (screen.name === 'paymentPlan') {
+    return (
+      <PaymentPlanScreen
+        lid={screen.lid}
+        onBack={goBack}
+      />
+    );
+  }
+
   // Default: Home
   return (
     <HomeScreen
-      onNavigate={(name: string, params?: any) =>
-        navigate(
-          name === 'DebtDetail'
-            ? { name: 'debtDetail', loanId: params.loanId }
-            : { name: 'messages' },
-        )
-      }
+      onNavigate={(name: string, params?: any) => {
+        const screenMap: Record<string, Screen> = {
+          DebtDetail: { name: 'debtDetail', loanId: params?.loanId },
+          Promise: { name: 'promise', loanId: params?.loanId },
+          Messages: { name: 'messages' },
+          PaymentPlan: { name: 'paymentPlan', lid: params?.lid },
+        };
+        navigate(screenMap[name] ?? { name: 'home' });
+      }}
     />
   );
 }

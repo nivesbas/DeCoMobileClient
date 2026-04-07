@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, ActivityIndicator, Alert,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, BackHandler,
 } from 'react-native';
 import { getDebtDetail } from '../services/debtService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { DebtDetail } from '../types/api';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { MainStackParamList } from '../navigation';
 
-type Props = NativeStackScreenProps<MainStackParamList, 'DebtDetail'>;
+interface Props {
+  loanId: string;
+  onBack: () => void;
+}
 
-export default function DebtDetailScreen({ route }: Props) {
-  const { loanId } = route.params;
+export default function DebtDetailScreen({ loanId, onBack }: Props) {
   const [data, setData] = useState<DebtDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +28,15 @@ export default function DebtDetailScreen({ route }: Props) {
       }
     })();
   }, [loanId]);
+
+  // Android back gesture → go back to Home
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true;
+    });
+    return () => handler.remove();
+  }, [onBack]);
 
   const formatAmount = (amount: number, currency: string) =>
     `${amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} ${currency}`;
@@ -46,48 +55,59 @@ export default function DebtDetailScreen({ route }: Props) {
   if (!data) return null;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.headerCard}>
-        <Text style={styles.productName}>{data.productName}</Text>
-        <Text style={styles.loanId}>ID: {data.loanId}</Text>
+    <View style={styles.container}>
+      {/* Header bar */}
+      <View style={styles.headerBar}>
+        <TouchableOpacity onPress={onBack}>
+          <Text style={styles.backText}>{'←'} {t('back') ?? 'Nazad'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerBarTitle}>{t('debt_detail_title')}</Text>
+        <View style={{ width: 60 }} />
       </View>
 
-      {/* Amounts */}
-      <View style={styles.card}>
-        <InfoRow label={t('debt_outstanding')} value={formatAmount(data.outstandingAmount, data.currency)} bold />
-        <InfoRow
-          label={t('debt_due')}
-          value={formatAmount(data.dueAmount, data.currency)}
-          valueColor={COLORS.error}
-          bold
-        />
-        <InfoRow label={t('debt_dpd')} value={String(data.daysPastDue)} />
-      </View>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Header */}
+        <View style={styles.headerCard}>
+          <Text style={styles.productName}>{data.productName}</Text>
+          <Text style={styles.loanId}>ID: {data.loanId}</Text>
+        </View>
 
-      {/* Dates */}
-      <View style={styles.card}>
-        <InfoRow label={t('debt_contract_date')} value={formatDate(data.contractDate)} />
-        <InfoRow label={t('debt_due_date')} value={formatDate(data.dueDate)} />
-      </View>
+        {/* Amounts */}
+        <View style={styles.card}>
+          <InfoRow label={t('debt_outstanding')} value={formatAmount(data.outstandingAmount, data.currency)} bold />
+          <InfoRow
+            label={t('debt_due')}
+            value={formatAmount(data.dueAmount, data.currency)}
+            valueColor={COLORS.error}
+            bold
+          />
+          <InfoRow label={t('debt_dpd')} value={String(data.daysPastDue)} />
+        </View>
 
-      {/* Payments */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>{t('debt_payments')}</Text>
-        {data.recentPayments.length === 0 ? (
-          <Text style={styles.emptyText}>{t('debt_no_payments')}</Text>
-        ) : (
-          data.recentPayments.map((payment, i) => (
-            <View key={i} style={[styles.paymentRow, i > 0 && styles.paymentDivider]}>
-              <Text style={styles.paymentDate}>{formatDate(payment.paymentDate)}</Text>
-              <Text style={styles.paymentAmount}>
-                {formatAmount(payment.amount, payment.currency)}
-              </Text>
-            </View>
-          ))
-        )}
-      </View>
-    </ScrollView>
+        {/* Dates */}
+        <View style={styles.card}>
+          <InfoRow label={t('debt_contract_date')} value={formatDate(data.contractDate)} />
+          <InfoRow label={t('debt_due_date')} value={formatDate(data.dueDate)} />
+        </View>
+
+        {/* Payments */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('debt_payments')}</Text>
+          {data.recentPayments.length === 0 ? (
+            <Text style={styles.emptyText}>{t('debt_no_payments')}</Text>
+          ) : (
+            data.recentPayments.map((payment, i) => (
+              <View key={i} style={[styles.paymentRow, i > 0 && styles.paymentDivider]}>
+                <Text style={styles.paymentDate}>{formatDate(payment.paymentDate)}</Text>
+                <Text style={styles.paymentAmount}>
+                  {formatAmount(payment.amount, payment.currency)}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -137,6 +157,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: COLORS.background,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+    paddingTop: 56,
+    backgroundColor: COLORS.primary,
+  },
+  backText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textOnPrimary,
+    fontWeight: '600',
+  },
+  headerBarTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.textOnPrimary,
   },
   content: {
     padding: SPACING.md,

@@ -122,3 +122,62 @@ export interface MessageHistoryResponse {
   messages: MessageHistoryItem[];
   hasMore: boolean;
 }
+
+// ── Promise to Pay ──────────────────────────────────────────────────────────
+
+export interface PtpLoanEligibility {
+  lid: number;
+  loan: string;
+  eligible: boolean;
+  reason?: string;
+  dueAmount: number;
+  dueCurrency: string;
+  maxDays: number;
+  maxDiscountPercent: number;
+  hasActivePromise: boolean;
+  hasPaymentPlan: boolean;
+  brokenPromiseCount: number;
+  activePromiseDate?: string;
+  activePromiseValue?: number;
+  activePromiseCurr?: string;
+}
+
+export interface PtpEligibilityResponse {
+  loans: PtpLoanEligibility[];
+}
+
+export interface PtpCreateRequest {
+  lid: number;              // specific loan LID
+  promiseDate: string;      // yyyy-MM-dd
+  promiseValue: number;
+  promiseCurrency: string;
+  comment?: string;
+}
+
+export interface PtpCreateResponse {
+  success: boolean;
+  message: string;
+  approvalMode: string;     // "auto" | "manual"
+  actionIds: number[];
+}
+
+// ── Payment Plan ───────────────────────────────────────────────────────────
+
+export interface PaymentPlan {
+  idPaymentPlan: number;
+  lid: number;
+  loan: string;
+  productName: string;
+  status: number;            // 0=Active, 1=Completed, 2=Broken, 3=Terminated
+  startDate: string;
+  endDate: string;
+  installments: PaymentPlanInstallment[];
+}
+
+export interface PaymentPlanInstallment {
+  idPaymentPlanDetail: number;
+  promiseDate: string;
+  promiseValue: number;
+  currency: string;
+  idPromiseStatus: number;   // 0=Pending, 1=Kept, 2=Broken, 3=Terminated
+}

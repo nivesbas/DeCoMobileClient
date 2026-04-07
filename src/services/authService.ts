@@ -35,7 +35,12 @@ export async function register(
     { skipAuth: true },
   );
 
-  return response.data!;
+  if (!response.data) {
+    console.error('[Auth] register returned no data:', JSON.stringify(response));
+    throw new Error(response.message ?? 'Registration failed.');
+  }
+
+  return response.data;
 }
 
 export async function verifyOtp(
@@ -56,7 +61,12 @@ export async function verifyOtp(
     { skipAuth: true },
   );
 
-  const result = response.data!;
+  if (!response.data) {
+    console.error('[Auth] verify-otp returned no data:', JSON.stringify(response));
+    throw new Error(response.message ?? 'Verification failed.');
+  }
+
+  const result = response.data;
 
   // Store tokens on success
   if (result.success && result.accessToken && result.refreshToken) {

@@ -44,12 +44,16 @@ export default function OtpScreen({ customerId, phoneNumber, onBack }: Props) {
 
     try {
       const result = await verifyOtp(customerId, code);
-      if (!result.success) {
-        Alert.alert('', result.message);
-        setCode('');
-        if (result.deviceBlocked) {
-          onBack();
-        }
+      if (result.success) {
+        // Auth state will change → App re-renders → HomeScreen loads
+        console.log('[OTP] Verification successful, transitioning to Home...');
+        return; // Don't update state — component will unmount
+      }
+
+      Alert.alert('', result.message);
+      setCode('');
+      if (result.deviceBlocked) {
+        onBack();
       }
     } catch (error: any) {
       Alert.alert('', error.message ?? t('error_generic'));
