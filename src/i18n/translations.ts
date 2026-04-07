@@ -1,4 +1,7 @@
-const translations = {
+import { fetchTranslations } from '../services/translationService';
+
+// ── Hardcoded fallback translations ─────────────────────────────────────────
+const fallback = {
   sr: {
     // Auth
     register_title: 'Dobrodošli',
@@ -85,6 +88,7 @@ const translations = {
     pp_status_terminated: 'Otkazano',
     pp_no_plan: 'Nema aktivnog plana otplate.',
     pp_view_plan: 'Pogledaj plan otplate',
+    pp_total_debt: 'Ukupno dugovanje',
 
     // Common
     back: 'Nazad',
@@ -167,7 +171,6 @@ const translations = {
     ptp_home_banner_detail: 'by',
     ptp_button: 'Promise to pay',
 
-    // Payment Plan
     pp_title: 'Payment Plan',
     pp_loan: 'Product',
     pp_period: 'Period',
@@ -179,6 +182,7 @@ const translations = {
     pp_status_terminated: 'Terminated',
     pp_no_plan: 'No active payment plan.',
     pp_view_plan: 'View payment plan',
+    pp_total_debt: 'Total outstanding',
 
     back: 'Back',
     retry: 'Try again',
@@ -194,11 +198,70 @@ const translations = {
   },
 } as const;
 
-export type TranslationKey = keyof typeof translations.sr;
-export type Locale = keyof typeof translations;
+// ── Runtime state ───────────────────────────────────────────────────────────
 
-export function t(key: TranslationKey, locale: Locale = 'sr'): string {
-  return translations[locale]?.[key] ?? translations.sr[key] ?? key;
+type Locale = 'sr' | 'en';
+let currentLocale: Locale = 'sr';
+let remoteTranslations: Record<string, Record<string, string>> = {};
+let initialized = false;
+
+/**
+ * Load translations from backend and cache them.
+ * Call once at app startup.
+ */
+export async function initTranslations(locale: Locale = 'sr'): Promise<void> {
+  currentLocale = locale;
+
+  try {
+    const remote = await fetchTranslations(locale);
+    if (remote) {
+      remoteTranslations[locale] = remote;
+    }
+  } catch (error) {
+    console.warn('[i18n] Failed to init translations, using fallback');
+  }
+
+  initialized = true;
 }
 
-export default translations;
+/**
+ * Set active locale and load translations if not cached.
+ */
+export async function setLocale(locale: Locale): Promise<void> {
+  currentLocale = locale;
+
+  if (!remoteTranslations[locale]) {
+    const remote = await fetchTranslations(locale);
+    if (remote) {
+      remoteTranslations[locale] = remote;
+    }
+  }
+}
+
+/**
+ * Get translation by key.
+ * Priority: remote translations → fallback → key itself.
+ */
+export function t(key: string, locale?: Locale): string {
+  const loc = locale ?? currentLocale;
+
+  // Try remote translations first (dot-notation keys from backend)
+  const remote = remoteTranslations[loc];
+  if (remote) {
+    // Try exact key match
+    if (remote[key]) return remote[key];
+    // Try with "mobile." prefix (backend may namespace mobile keys)
+    if (remote[`mobile.${key}`]) return remote[`mobile.${key}`];
+  }
+
+  // Fall back to hardcoded translations
+  const fb = fallback[loc] ?? fallback.sr;
+  return (fb as Record<string, string>)[key] ?? (fallback.sr as Record<string, string>)[key] ?? key;
+}
+
+export function getLocale(): Locale {
+  return currentLocale;
+}
+
+export type TranslationKey = keyof typeof fallback.sr;
+export default fallback;

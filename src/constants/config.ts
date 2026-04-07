@@ -4,6 +4,11 @@ export const CONFIG = {
     ? 'http://192.168.50.132:5057/api/v1' // Dev: local Gateway (LAN)
     : 'https://gateway.yourdomain.com/api/v1', // Prod: DMZ Gateway
 
+  // Backend API URL — for public endpoints (translations, locales)
+  BACKEND_URL: __DEV__
+    ? 'https://development.uril.rs/api' // Dev: Cloudflare tunnel to IIS
+    : 'https://development.uril.rs/api', // Prod: same for now
+
   // Timeouts
   REQUEST_TIMEOUT_MS: 30_000,
   TOKEN_REFRESH_THRESHOLD_SECONDS: 120, // Refresh 2 min before expiry

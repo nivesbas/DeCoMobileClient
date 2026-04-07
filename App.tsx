@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/hooks/useAuth';
+import { initTranslations } from './src/i18n/translations';
 import RegisterScreen from './src/screens/RegisterScreen';
 import OtpScreen from './src/screens/OtpScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -25,6 +26,9 @@ type Screen =
 function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
   const [screen, setScreen] = useState<Screen>({ name: 'register' });
+
+  // Load remote translations on app start
+  useEffect(() => { initTranslations('sr'); }, []);
   const [history, setHistory] = useState<Screen[]>([]);
   const [biometricVerified, setBiometricVerified] = useState(false);
 

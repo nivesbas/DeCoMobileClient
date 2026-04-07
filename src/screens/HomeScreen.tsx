@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  RefreshControl, Alert, ActivityIndicator, BackHandler,
+  RefreshControl, Alert, ActivityIndicator, BackHandler, Image,
 } from 'react-native';
 import { getDebtSummary } from '../services/debtService';
 import { checkPromiseEligibility } from '../services/promiseService';
@@ -218,7 +218,11 @@ export default function HomeScreen({ onNavigate }: Props) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('home_title')}</Text>
+        <Image
+          source={require('../../assets/images/deco-logo.png')}
+          style={styles.headerLogo}
+          resizeMode="contain"
+        />
         <TouchableOpacity onPress={handleCloseApp}>
           <Text style={styles.closeText}>{t('close_app')}</Text>
         </TouchableOpacity>
@@ -286,17 +290,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.lg,
     paddingTop: 60,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.surface,
   },
-  headerTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.textOnPrimary,
+  headerLogo: {
+    height: 64,
+    width: 240,
+    marginLeft: -SPACING.sm,
   },
   closeText: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textOnPrimary,
-    opacity: 0.8,
+    color: COLORS.textMuted,
   },
   summaryCard: {
     backgroundColor: COLORS.primaryDark,
