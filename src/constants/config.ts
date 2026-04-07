@@ -1,7 +1,7 @@
 export const CONFIG = {
   // Gateway API URL — the only external endpoint the app talks to
   API_BASE_URL: __DEV__
-    ? 'http://192.168.1.100:5057/api/v1' // Dev: local Gateway
+    ? 'https://development.uril.rs/api/v1' // Dev: Cloudflare tunnel to Gateway
     : 'https://gateway.yourdomain.com/api/v1', // Prod: DMZ Gateway
 
   // Timeouts
