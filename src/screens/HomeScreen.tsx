@@ -5,9 +5,11 @@ import {
 } from 'react-native';
 import { getDebtSummary } from '../services/debtService';
 import { checkPromiseEligibility } from '../services/promiseService';
-import { t } from '../i18n/translations';
+import { t, getLocale, setLocale } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { DebtSummary, DebtItem, PtpLoanEligibility } from '../types/api';
+
+type Locale = 'sr' | 'en';
 
 interface Props {
   onNavigate: (screen: string, params?: any) => void;
@@ -21,6 +23,7 @@ export default function HomeScreen({ onNavigate }: Props) {
 
   // PTP eligibility per loan (keyed by loan identifier)
   const [ptpByLoan, setPtpByLoan] = useState<Map<string, PtpLoanEligibility>>(new Map());
+  const [locale, setCurrentLocale] = useState<Locale>(getLocale() as Locale);
 
   const fetchData = useCallback(async () => {
     try {
@@ -70,6 +73,12 @@ export default function HomeScreen({ onNavigate }: Props) {
       { text: t('yes'), style: 'default', onPress: () => BackHandler.exitApp() },
     ]);
   };
+
+  const toggleLocale = useCallback(async () => {
+    const next: Locale = locale === 'sr' ? 'en' : 'sr';
+    await setLocale(next);
+    setCurrentLocale(next);
+  }, [locale]);
 
   const formatAmount = (amount: number, currency: string) =>
     `${amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} ${currency}`;
@@ -218,13 +227,20 @@ export default function HomeScreen({ onNavigate }: Props) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/deco-logo.png')}
-          style={styles.headerLogo}
-          resizeMode="contain"
-        />
-        <TouchableOpacity onPress={handleCloseApp}>
-          <Text style={styles.closeText}>{t('close_app')}</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={toggleLocale} style={styles.langToggle}>
+            <Text style={[styles.langOption, locale === 'sr' && styles.langActive]}>SR</Text>
+            <Text style={styles.langSep}>|</Text>
+            <Text style={[styles.langOption, locale === 'en' && styles.langActive]}>EN</Text>
+          </TouchableOpacity>
+          <Image
+            source={require('../../assets/images/deco-logo.png')}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+        </View>
+        <TouchableOpacity onPress={handleCloseApp} style={styles.closeButton}>
+          <Text style={styles.closeIcon}>✕</Text>
         </TouchableOpacity>
       </View>
 
@@ -292,13 +308,48 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     backgroundColor: COLORS.surface,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  langToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.background,
+  },
+  langOption: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+  },
+  langActive: {
+    color: COLORS.primary,
+    fontWeight: '800',
+  },
+  langSep: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textMuted,
+    marginHorizontal: 4,
+  },
   headerLogo: {
     height: 64,
     width: 240,
-    marginLeft: -SPACING.sm,
   },
-  closeText: {
-    fontSize: FONT_SIZES.sm,
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeIcon: {
+    fontSize: 16,
+    fontWeight: '600',
     color: COLORS.textMuted,
   },
   summaryCard: {
