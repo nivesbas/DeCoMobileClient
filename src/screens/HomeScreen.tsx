@@ -239,22 +239,6 @@ export default function HomeScreen({ onNavigate }: Props) {
         </View>
       )}
 
-      {/* Promise to Pay — global button (only if eligible loans exist) */}
-      {hasEligibleLoans && (
-        <TouchableOpacity
-          style={styles.ptpButton}
-          onPress={() => onNavigate('Promise')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.ptpButtonIcon}>🤝</Text>
-          <View style={styles.ptpButtonContent}>
-            <Text style={styles.ptpButtonTitle}>{t('ptp_button')}</Text>
-            <Text style={styles.ptpButtonSub}>{t('ptp_select_date')}</Text>
-          </View>
-          <Text style={styles.ptpArrow}>›</Text>
-        </TouchableOpacity>
-      )}
-
       {/* Debt list */}
       <FlatList
         data={data?.debts ?? []}
