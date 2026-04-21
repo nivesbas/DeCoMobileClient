@@ -1,8 +1,11 @@
 export const CONFIG = {
   // Gateway API URL — the only external endpoint the app talks to
+  // TEMP: both branches point at showroom Gateway for demo.
+  // Home-lab dev URL preserved in comment below — revert when going back to LAN dev:
+  //   __DEV__ ? 'http://192.168.50.132:5057/api/v1' : 'https://gw.demo.uril.rs/api/v1'
   API_BASE_URL: __DEV__
-    ? 'http://192.168.50.132:5057/api/v1' // Dev: local Gateway (LAN)
-    : 'https://gateway.yourdomain.com/api/v1', // Prod: DMZ Gateway
+    ? 'https://gw.demo.uril.rs/api/v1' // Dev (showroom): Hetzner Gateway
+    : 'https://gw.demo.uril.rs/api/v1', // Prod (showroom): Hetzner Gateway
 
   // Backend API URL — for public endpoints (translations, locales)
   BACKEND_URL: __DEV__

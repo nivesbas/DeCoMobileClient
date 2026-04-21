@@ -30,6 +30,12 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4798a173-f383-4b58-b1a7-c61f35f4a95e"
+      }
+    },
+    "owner": "nivesbas"
   }
 }
