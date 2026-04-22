@@ -76,6 +76,18 @@ const fallback = {
     ptp_home_banner_detail: 'do',
     ptp_button: 'Obećaj uplatu',
 
+    // Payment QR
+    qr_title: 'Plaćanje',
+    qr_pay_button: 'Plati',
+    qr_hint: 'Skenirajte QR kod u Vašoj bankarskoj aplikaciji',
+    qr_recipient: 'Primalac',
+    qr_reference: 'Poziv na broj',
+    qr_currency: 'Valuta',
+    qr_amount: 'Iznos',
+    qr_amount_hint: 'Ostavite 0 za otvoreni QR (unosite iznos u aplikaciji banke).',
+    qr_regenerate: 'Osveži QR',
+    qr_invalid_amount: 'Iznos ne može biti negativan.',
+
     // Payment Plan
     pp_title: 'Plan otplate',
     pp_loan: 'Proizvod',
@@ -170,6 +182,17 @@ const fallback = {
     ptp_home_banner: 'Payment promise',
     ptp_home_banner_detail: 'by',
     ptp_button: 'Promise to pay',
+
+    qr_title: 'Payment',
+    qr_pay_button: 'Pay',
+    qr_hint: 'Scan the QR code in your banking app',
+    qr_recipient: 'Recipient',
+    qr_reference: 'Reference',
+    qr_currency: 'Currency',
+    qr_amount: 'Amount',
+    qr_amount_hint: 'Leave 0 for open QR (enter amount in your banking app).',
+    qr_regenerate: 'Regenerate QR',
+    qr_invalid_amount: 'Amount cannot be negative.',
 
     pp_title: 'Payment Plan',
     pp_loan: 'Product',

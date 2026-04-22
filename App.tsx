@@ -11,6 +11,7 @@ import DebtDetailScreen from './src/screens/DebtDetailScreen';
 import MessagesScreen from './src/screens/MessagesScreen';
 import PromiseScreen from './src/screens/PromiseScreen';
 import PaymentPlanScreen from './src/screens/PaymentPlanScreen';
+import PaymentQrScreen from './src/screens/PaymentQrScreen';
 import BiometricLockScreen from './src/screens/BiometricLockScreen';
 import { COLORS } from './src/constants/theme';
 
@@ -21,7 +22,8 @@ type Screen =
   | { name: 'debtDetail'; loanId: string }
   | { name: 'messages' }
   | { name: 'promise'; loanId?: string }
-  | { name: 'paymentPlan'; lid: number };
+  | { name: 'paymentPlan'; lid: number }
+  | { name: 'paymentQr'; loanId: string };
 
 function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
@@ -95,6 +97,16 @@ function AppContent() {
   if (screen.name === 'debtDetail') {
     return (
       <DebtDetailScreen
+        loanId={screen.loanId}
+        onBack={goBack}
+        onPay={(loanId) => navigate({ name: 'paymentQr', loanId })}
+      />
+    );
+  }
+
+  if (screen.name === 'paymentQr') {
+    return (
+      <PaymentQrScreen
         loanId={screen.loanId}
         onBack={goBack}
       />

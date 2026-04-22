@@ -10,9 +10,10 @@ import type { DebtDetail } from '../types/api';
 interface Props {
   loanId: string;
   onBack: () => void;
+  onPay: (loanId: string) => void;
 }
 
-export default function DebtDetailScreen({ loanId, onBack }: Props) {
+export default function DebtDetailScreen({ loanId, onBack, onPay }: Props) {
   const [data, setData] = useState<DebtDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +83,14 @@ export default function DebtDetailScreen({ loanId, onBack }: Props) {
             bold
           />
           <InfoRow label={t('debt_dpd')} value={String(data.daysPastDue)} />
+
+          <TouchableOpacity
+            style={styles.payButton}
+            onPress={() => onPay(data.loanId)}
+            accessibilityLabel={t('qr_pay_button')}
+          >
+            <Text style={styles.payButtonText}>{t('qr_pay_button')}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Dates */}
@@ -236,5 +245,17 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONT_SIZES.sm,
     fontStyle: 'italic',
+  },
+  payButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  payButtonText: {
+    color: COLORS.textOnPrimary,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
   },
 });

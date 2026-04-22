@@ -161,6 +161,19 @@ export interface PtpCreateResponse {
   actionIds: number[];
 }
 
+// ── Payment QR ─────────────────────────────────────────────────────────────
+
+export interface PaymentQrResponse {
+  success: boolean;
+  message?: string;
+  payload?: string;        // QR text content to render
+  format?: string;         // "EPC" | "NBS"
+  amount?: number;
+  currency?: string;
+  reference?: string;
+  recipientName?: string;
+}
+
 // ── Payment Plan ───────────────────────────────────────────────────────────
 
 export interface PaymentPlan {
