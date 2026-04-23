@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { CONFIG } from '../constants/config';
 import { setTokenRefreshHandler } from '../services/apiClient';
 import * as authService from '../services/authService';
+import { registerForPushNotificationsAsync } from '../services/pushNotificationService';
 import type { RegisterResponse, VerifyOtpResponse } from '../types/api';
 
 interface AuthState {
@@ -54,12 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (refreshed) {
               console.log('[Auth] Token refreshed successfully');
               setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+              // Re-register push token on session restore — it may have rotated
+              // while the app was backgrounded. Fire-and-forget.
+              void registerForPushNotificationsAsync();
             } else {
               console.log('[Auth] Refresh failed, user must re-login');
               setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
             }
           } else {
             setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+            void registerForPushNotificationsAsync();
           }
         } else {
           setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
@@ -91,6 +96,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (result.success) {
       // Fresh login — no biometric needed
       setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: false });
+      // Fresh login is the ideal moment to ask for push permission — we've
+      // just earned trust via OTP, and the token lands before any scheduled
+      // job fires for this customer. Fire-and-forget on purpose; registration
+      // failure must never surface to the OTP screen.
+      void registerForPushNotificationsAsync();
     }
     return result;
   }, []);

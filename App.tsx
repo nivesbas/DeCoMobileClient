@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/hooks/useAuth';
 import { initTranslations } from './src/i18n/translations';
+import { setupNotificationHandlers } from './src/services/pushNotificationService';
 import RegisterScreen from './src/screens/RegisterScreen';
 import OtpScreen from './src/screens/OtpScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -33,6 +34,30 @@ function AppContent() {
   useEffect(() => { initTranslations('sr'); }, []);
   const [history, setHistory] = useState<Screen[]>([]);
   const [biometricVerified, setBiometricVerified] = useState(false);
+
+  // Wire foreground + background notification handlers once, at app start.
+  // Tap payloads land in `setScreen` via the `type`/`lid` fields the backend
+  // emits from ClientNotificationDispatcher (Phase 3B will map more triggers;
+  // for now PtpReminder → DebtDetail is a reasonable landing).
+  useEffect(() => {
+    return setupNotificationHandlers((data) => {
+      const type = typeof data?.type === 'string' ? data.type : null;
+      const lid = typeof data?.lid === 'number' ? data.lid : null;
+
+      if (type === 'MessageReceived') {
+        setScreen({ name: 'messages' });
+      } else if (type === 'PtpReminder' || type === 'DueInstallmentReminder') {
+        if (lid !== null) {
+          setScreen({ name: 'debtDetail', loanId: String(lid) });
+        }
+      } else if (type === 'PaymentPlanReminder') {
+        if (lid !== null) {
+          setScreen({ name: 'paymentPlan', lid });
+        }
+      }
+      // Unknown trigger types fall through — the home screen is the safe default.
+    });
+  }, []);
 
   const navigate = (next: Screen) => {
     setHistory(prev => [...prev, screen]);

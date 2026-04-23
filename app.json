@@ -28,8 +28,18 @@
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan"
     },
+    "notification": {
+      "iconColor": "#0066CC"
+    },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#0066CC",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "extra": {
       "eas": {
