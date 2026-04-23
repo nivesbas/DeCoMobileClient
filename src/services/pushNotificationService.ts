@@ -69,41 +69,42 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
       });
     }
 
-    // Permission dance — request if we haven't yet. We log the actual status
-    // values because Android 14+/OneUI 7 has been known to return non-standard
-    // strings here; if you see "[Push] Permission check:" with a status that
-    // isn't "granted"/"denied"/"undetermined", that's your hint.
+    // Ask for permission (best-effort — we still try to fetch the FCM token
+    // even on denial, because expo-notifications' permission wrapper has a
+    // known bug on Android 14+/OneUI 7 where it reports 'denied' even after
+    // the OS dialog grants POST_NOTIFICATIONS. Logging the raw values makes
+    // the discrepancy visible in logcat when it happens.
+    //
+    // We request the token unconditionally: FCM token fetch does NOT require
+    // POST_NOTIFICATIONS (that permission gates notification *display*, not
+    // token retrieval). Worst case: backend has the token but OS suppresses
+    // display — the user re-enables in Settings and existing token works.
     const existing = await Notifications.getPermissionsAsync();
-    let finalStatus = existing.status;
     console.log('[Push] Permission check:', {
       status: existing.status,
       granted: existing.granted,
       canAskAgain: existing.canAskAgain,
     });
 
-    if (existing.status !== 'granted') {
+    if (existing.status !== 'granted' && existing.canAskAgain) {
       const requested = await Notifications.requestPermissionsAsync();
-      finalStatus = requested.status;
       console.log('[Push] Permission after request:', {
         status: requested.status,
         granted: requested.granted,
       });
     }
 
-    if (finalStatus !== 'granted') {
-      console.log('[Push] Permission not granted — skipping token registration.');
+    // Ask the OS for the raw device push token. On Android this is the FCM
+    // registration token; on iOS it's the APNs device token. Bypasses
+    // getExpoPushTokenAsync deliberately — that call routes through exp.host
+    // and carries the same permission-wrapper bug.
+    let tokenData: { type: string; data: string };
+    try {
+      tokenData = await Notifications.getDevicePushTokenAsync();
+    } catch (err) {
+      console.warn('[Push] getDevicePushTokenAsync threw:', err);
       return null;
     }
-
-    // Ask the OS for the raw device push token. On Android this is the FCM
-    // registration token; on iOS it's the APNs device token. We send it
-    // straight to our backend which uses the Firebase Admin SDK (Android) /
-    // APNs (iOS, later) to deliver.
-    //
-    // We bypass getExpoPushTokenAsync() deliberately — that call routes
-    // through exp.host's proxy and has additional permission-detection quirks
-    // on Samsung devices. Raw device tokens are more reliable.
-    const tokenData = await Notifications.getDevicePushTokenAsync();
     const expoPushToken = tokenData.data;
 
     if (!expoPushToken) {
