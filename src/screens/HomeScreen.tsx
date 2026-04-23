@@ -560,6 +560,11 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
   },
+  closeText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   fab: {
     position: 'absolute',
     bottom: 32,
