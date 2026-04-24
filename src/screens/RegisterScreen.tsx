@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { tenantLogo } from '../tenant/tenantAssets';
 
 interface Props {
   onOtpSent: (customerId: string, phoneNumber: string) => void;
@@ -99,7 +100,7 @@ export default function RegisterScreen({ onOtpSent }: Props) {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Powered by</Text>
           <Image
-            source={require('../../assets/images/uril-logo.png')}
+            source={tenantLogo}
             style={styles.urilLogo}
             resizeMode="contain"
           />

@@ -1,20 +1,25 @@
-export const CONFIG = {
-  // Gateway API URL — the only external endpoint the app talks to
-  // TEMP: both branches point at showroom Gateway for demo.
-  // Home-lab dev URL preserved in comment below — revert when going back to LAN dev:
-  //   __DEV__ ? 'http://192.168.50.132:5057/api/v1' : 'https://gw.demo.uril.rs/api/v1'
-  API_BASE_URL: __DEV__
-    ? 'https://gw.demo.uril.rs/api/v1' // Dev (showroom): Hetzner Gateway
-    : 'https://gw.demo.uril.rs/api/v1', // Prod (showroom): Hetzner Gateway
+import Constants from 'expo-constants';
+import type { TenantConfig } from '../tenant/types';
 
-  // Backend API URL — for public endpoints (translations, locales)
-  BACKEND_URL: __DEV__
-    ? 'https://development.uril.rs/api' // Dev: Cloudflare tunnel to IIS
-    : 'https://development.uril.rs/api', // Prod: same for now
+const tenant = Constants.expoConfig?.extra?.tenant as TenantConfig | undefined;
+
+if (!tenant?.gatewayUrl || !tenant?.backendUrl) {
+  throw new Error(
+    'Tenant config missing from expoConfig.extra — rebuild with `npm run build:tenant -- --tenant=<slug>`.',
+  );
+}
+
+export const CONFIG = {
+  // Gateway API URL — the only external endpoint the app talks to.
+  // Baked in at `expo prebuild` time from tenants/<slug>/tenant.config.ts.
+  API_BASE_URL: tenant.gatewayUrl,
+
+  // Backend API URL — for public endpoints (translations, locales).
+  BACKEND_URL: tenant.backendUrl,
 
   // Timeouts
   REQUEST_TIMEOUT_MS: 30_000,
-  TOKEN_REFRESH_THRESHOLD_SECONDS: 120, // Refresh 2 min before expiry
+  TOKEN_REFRESH_THRESHOLD_SECONDS: 120,
 
   // Storage keys (SecureStore)
   STORAGE_KEYS: {
@@ -28,5 +33,4 @@ export const CONFIG = {
 
   // App
   APP_VERSION: '1.0.0',
-  BUNDLE_ID: 'rs.uril.deco.client',
 } as const;

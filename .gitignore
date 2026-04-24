@@ -41,10 +41,11 @@ yarn-error.*
 /android
 
 # Firebase — per-tenant, pulled from Firebase Console, never committed.
-# The app.json references ./google-services.json and expo prebuild copies
-# it into android/app/. To bootstrap: download from Firebase Console →
-# Project settings → Your apps → rs.uril.deco.client → google-services.json.
+# app.config.ts points at tenants/<slug>/google-services.json and expo prebuild
+# copies it into android/app/. See tenants/README.md for the bootstrap flow.
 /google-services.json
 /GoogleService-Info.plist
+tenants/*/google-services.json
+tenants/*/GoogleService-Info.plist
 
 .claude/
