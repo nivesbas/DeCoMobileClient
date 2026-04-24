@@ -1,0 +1,184 @@
+# DeCoClientApp — DeCo Customer Mobile App
+
+> The debtor-facing half of DeCo. Everything the operator side (DeCoREACT) is not.
+
+Expo / React Native app that lets customers view their debt, make promise-to-pay arrangements, generate payment QR codes, and chat with operators. Talks only to the DeCo Gateway (never the main API directly) over HTTPS. Push notifications go over FCM (Android) / APNs (iOS) using the device's native token — **not** the Expo push proxy (see [Push notifications](#push-notifications) for why).
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|---|---|
+| Framework | Expo 54 + React Native 0.81 + React 19 |
+| Language | TypeScript 5.9 (strict) |
+| Navigation | State-based (`useState<Screen>` in `App.tsx`) — deliberately not React Navigation |
+| Storage | `expo-secure-store` (tokens, device id), `@react-native-async-storage/async-storage` |
+| Auth | OTP + device-bound refresh tokens, biometric unlock via `expo-local-authentication` |
+| Push | `expo-notifications` + raw FCM/APNs device token |
+| QR | `react-native-qrcode-svg` |
+| Build | EAS Build (cloud) or local Gradle |
+| i18n | Custom remote-loaded translations (`src/i18n/translations.ts`, Serbian default) |
+
+---
+
+## Prerequisites
+
+- **Node.js** 20+ and **npm** 10+
+- **Expo CLI** — `npm install -g expo`
+- **EAS CLI** (for cloud builds) — `npm install -g eas-cli`, then `eas login` (owner account: `nivesbas`)
+- **Android SDK + JDK 17** (for local Gradle builds only — EAS cloud builds need neither)
+- **Firebase Console** access to project **DeCo Client App** — you need to download `google-services.json` (see [Firebase bootstrap](#firebase-bootstrap))
+- A physical Android/iOS device for push-notification testing (simulators don't get FCM/APNs tokens)
+
+---
+
+## Getting Started
+
+### 1. Clone and install
+
+```bash
+git clone <repo-url>
+cd DeCoClientApp
+npm install
+```
+
+### 2. Firebase bootstrap
+
+Two files are gitignored and must be fetched out-of-band before the app will build:
+
+- `./google-services.json` — Android FCM config (required for all Android builds)
+- `./GoogleService-Info.plist` — iOS APNs config (required only for iOS builds)
+
+**To fetch `google-services.json`:**
+
+1. Go to [Firebase Console](https://console.firebase.google.com) → project **DeCo Client App**
+2. Project Settings (gear icon) → **Your apps** → Android app `rs.uril.deco.client`
+3. Click **google-services.json** → Download
+4. Save to `DeCoClientApp/google-services.json` (repo root)
+
+`app.json` references the file at the root; EAS picks it up automatically during build. For local Gradle builds, `expo prebuild` also copies it into `android/app/google-services.json` — if you edit the root file, re-run prebuild.
+
+If `google-services.json` is missing, the build fails with a `Could not find google-services.json` error. If it's from the **wrong Firebase project**, push tokens register fine but FCM silently drops messages at delivery (no error, just no banner).
+
+### 3. Run in Expo Go (fastest dev loop)
+
+```bash
+npm start
+```
+
+Scan the QR with Expo Go app. Limitations: push notifications won't work in Expo Go on SDK 53+ — for that you need a dev build (step 4).
+
+### 4. Build a dev/preview APK
+
+**Cloud (recommended):**
+
+```bash
+eas build --platform android --profile preview
+```
+
+`preview` profile points at the **showroom** gateway (`https://gw.demo.uril.rs`). Takes ~15 min. Download link appears in terminal and Expo dashboard.
+
+**Local (faster iteration, needs Android SDK):**
+
+```bash
+npx expo prebuild --platform android --clean
+cd android && ./gradlew assembleDebug
+# APK at android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### 5. Production build (app bundle for Play Store)
+
+```bash
+eas build --platform android --profile production
+```
+
+Uses `appVersionSource: local`, auto-increments version code. Output is `.aab` (Play Store format, not installable directly — use `preview` for side-load testing).
+
+---
+
+## Configuration
+
+Environment targets are hardcoded in [`src/constants/config.ts`](./src/constants/config.ts) — no runtime `.env`, deliberately. Both `__DEV__` and prod branches currently point at the showroom gateway. When going back to LAN dev, flip the `API_BASE_URL` branches per the comment in that file.
+
+EAS profiles (in [`eas.json`](./eas.json)) set `EXPO_PUBLIC_ENV` so build artifacts can be distinguished:
+
+| Profile | `EXPO_PUBLIC_ENV` | Target |
+|---|---|---|
+| `development` | *(unset)* | Local dev with dev client |
+| `preview` | `showroom` | Internal APK → showroom gateway |
+| `production` | `production` | Play Store bundle → (future) prod gateway |
+
+---
+
+## Push Notifications
+
+**Why not Expo push (`getExpoPushTokenAsync`)?** The Expo push proxy has a permission-wrapper bug on Android 14+ / OneUI 7 where `getPermissionsAsync()` returns `denied` even after the OS dialog grants `POST_NOTIFICATIONS`. We bypass it entirely — `getDevicePushTokenAsync()` returns the raw FCM registration token (Android) or APNs device token (iOS), which the backend sends directly through Firebase Admin SDK. The wire field, DB column, and SP parameter are all called `pushToken` (migration 113 renamed them from the historical `expoPushToken`). See the comment block at the top of [`src/services/pushNotificationService.ts`](./src/services/pushNotificationService.ts).
+
+**End-to-end flow:**
+
+1. Login (OTP) → `registerForPushNotificationsAsync()` fetches device token, POSTs to `/device/push-token` → backend upserts `gw.Client_Device_PushToken`
+2. Backend event (e.g. operator sends chat, PTP reminder) → `ClientNotificationDispatcher` → template render → FCM send → Google → device
+3. Foreground: banner shown via `setNotificationHandler({ shouldShowAlert: true })`
+4. Tap: `App.tsx` routes on `data.type` → `MessagesScreen` / `DebtDetailScreen` / `PaymentPlanScreen`
+
+**To test a push end-to-end on showroom:**
+
+- APK must be installed (not Expo Go — won't get FCM token on SDK 53+)
+- Login as a customer (e.g. `1603978710220`)
+- Operator sends a chat message via DeCoREACT operator UI at `https://demo.uril.rs/`
+- Expect a lock-screen banner within 1–3 s with the message preview (up to 60 chars, word-boundary truncation)
+
+If the push doesn't arrive, tail `podman logs deco-api` on the showroom host and grep for `MessageReceived|dispatch|debounce|preview` — the common causes are (a) no active device row for that customer in `gw.ClientDevices` / `gw.Client_Device_PushToken`, (b) the 30 s debounce suppressed a follow-up, (c) the FCM token was rejected as stale. The dispatcher logs each case explicitly.
+
+---
+
+## Architecture notes
+
+### Navigation is state-based, not React Navigation
+
+`App.tsx` holds `useState<Screen>` with a discriminated union of all possible screens. Screen switching is `setScreen({ name: 'messages' })`. This avoids a known Fabric crash on SDK 53+ with `@react-navigation/native-stack` and keeps the nav surface tiny for an 8-screen app. Back-navigation uses an explicit history stack in `AppContent`.
+
+Trade-off: no deep-link URL router, no gesture-based pop, no tab persistence. Acceptable for this app's scope; would be the first thing to swap if it grew past ~15 screens.
+
+### Biometric gate on restored sessions only
+
+Fresh OTP login skips biometric (user just proved they hold the phone number). Re-opens with a valid refresh token prompt for Face ID / fingerprint — `BiometricLockScreen` blocks the authenticated UI until unlock.
+
+### Gateway-only, no direct backend
+
+Every API call goes to `https://gw.demo.uril.rs/api/v1`. The backend is never exposed to the mobile app directly — the gateway enforces rate limits, auth, and the limited surface of endpoints the customer app is allowed to hit.
+
+### Polling for chat, push for everything else
+
+`MessagesScreen` polls every 5 s while open (cheap, gives near-real-time when user is already on the chat screen). Push exists for when the app is **not** on the chat screen — that's the "operator pings you" case. See also the `MessageReceived` debounce (30 s, backend-side) in the dispatcher.
+
+---
+
+## Key files
+
+| Path | Purpose |
+|---|---|
+| `App.tsx` | Root component, navigation state, notification tap router |
+| `src/constants/config.ts` | API URLs, timeouts, storage keys |
+| `src/services/pushNotificationService.ts` | FCM token registration, foreground/tap handlers |
+| `src/services/apiClient.ts` | HTTP client, token refresh, error types |
+| `src/hooks/useAuth.tsx` | Auth state machine, OTP flow, session restore |
+| `src/screens/*` | One file per top-level screen |
+| `app.json` | Expo config — bundle id, Firebase file reference, plugins |
+| `eas.json` | Build profiles (development / preview / production) |
+| `google-services.json` | **gitignored** — Firebase Android config, fetch from Firebase Console |
+
+---
+
+## Troubleshooting
+
+**Build fails with `Could not find google-services.json`** → step 2 of Getting Started, download from Firebase Console.
+
+**Push token registers but no push arrives** → Likely wrong Firebase project. Verify the `project_id` in `google-services.json` matches what the backend FCM Admin SDK is initialized with. The backend log shows `FCM sent: messageId=projects/<project_id>/messages/...` on successful dispatch.
+
+**`getDevicePushTokenAsync` returns empty on Android** → Play Services missing (emulator without Google APIs) or Firebase initialization failed. Check logcat for `FirebaseApp initialization unsuccessful`.
+
+**Login works, but every protected endpoint returns 401** → Token refresh is probably failing silently. Check `apiClient.ts` refresh logic; confirm backend `/auth/refresh` accepts the device-bound refresh token still stored in `SecureStore`.
+
+**Expo Go shows "Unmatched route"** → You're on a dev build mismatch. Stop Metro, `npx expo start --clear`.
