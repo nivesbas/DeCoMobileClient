@@ -39,4 +39,12 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase — per-tenant, pulled from Firebase Console, never committed.
+# The app.json references ./google-services.json and expo prebuild copies
+# it into android/app/. To bootstrap: download from Firebase Console →
+# Project settings → Your apps → rs.uril.deco.client → google-services.json.
+/google-services.json
+/GoogleService-Info.plist
+
 .claude/
