@@ -8,11 +8,12 @@ import type { ApiResponse } from '../types/api';
 // ── Wire types ─────────────────────────────────────────────────────────────
 
 interface PushTokenUpsertRequest {
-  // Historically an Expo push token (ExponentPushToken[...]). Since April 2026
-  // this is a raw FCM (Android) / APNs (iOS) token — we moved off the Expo push
-  // proxy after the permission wrapper proved unreliable on Android 14+/OneUI 7.
-  // Field name is preserved for backend / DB compatibility.
-  expoPushToken: string;
+  // Raw FCM (Android) / APNs (iOS) device token. Historically this field was
+  // called `expoPushToken` back when we went through the Expo push proxy
+  // (tokens of shape `ExponentPushToken[...]`); we moved off Expo's proxy in
+  // April 2026 and renamed the field end-to-end in migration 113. The wire
+  // contract, DB column, SP parameter, and all DTOs are now `pushToken`.
+  pushToken: string;
   platform: 'ios' | 'android';
   appVersion?: string;
 }
@@ -105,22 +106,22 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
       console.warn('[Push] getDevicePushTokenAsync threw:', err);
       return null;
     }
-    const expoPushToken = tokenData.data;
+    const pushToken = tokenData.data;
 
-    if (!expoPushToken) {
+    if (!pushToken) {
       console.warn('[Push] getDevicePushTokenAsync returned empty token.');
       return null;
     }
 
     console.log('[Push] Got device push token', {
       type: tokenData.type,
-      preview: typeof expoPushToken === 'string' ? expoPushToken.slice(0, 20) + '...' : '(non-string)',
+      preview: typeof pushToken === 'string' ? pushToken.slice(0, 20) + '...' : '(non-string)',
     });
 
     const platform = (Platform.OS === 'ios' ? 'ios' : 'android') as 'ios' | 'android';
 
     const body: PushTokenUpsertRequest = {
-      expoPushToken,
+      pushToken,
       platform,
       appVersion: CONFIG.APP_VERSION,
     };
@@ -139,7 +140,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     }
 
     console.log('[Push] Registered token for', platform);
-    return expoPushToken;
+    return pushToken;
   } catch (err) {
     // Network/auth errors must not break login. We log and move on; the app
     // will try again on next launch.
