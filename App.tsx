@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -29,49 +29,51 @@ type Screen =
 function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
   const [screen, setScreen] = useState<Screen>({ name: 'register' });
+  const [biometricVerified, setBiometricVerified] = useState(false);
+
+  // History lives in a ref — it never needs to trigger a re-render. Keeping it
+  // out of state also lets navigate/goBack stay pure (no setState-in-updater).
+  const historyRef = useRef<Screen[]>([]);
+  const screenRef = useRef<Screen>(screen);
+  screenRef.current = screen;
 
   // Load remote translations on app start
   useEffect(() => { initTranslations('sr'); }, []);
-  const [history, setHistory] = useState<Screen[]>([]);
-  const [biometricVerified, setBiometricVerified] = useState(false);
+
+  const navigate = (next: Screen) => {
+    historyRef.current.push(screenRef.current);
+    setScreen(next);
+  };
+
+  const goBack = () => {
+    const last = historyRef.current.pop();
+    setScreen(last ?? { name: 'home' });
+  };
 
   // Wire foreground + background notification handlers once, at app start.
-  // Tap payloads land in `setScreen` via the `type`/`lid` fields the backend
-  // emits from ClientNotificationDispatcher (Phase 3B will map more triggers;
-  // for now PtpReminder → DebtDetail is a reasonable landing).
+  // Tap payloads route through `navigate()` so history stays consistent and
+  // the back arrow always has somewhere to return to.
   useEffect(() => {
     return setupNotificationHandlers((data) => {
       const type = typeof data?.type === 'string' ? data.type : null;
       const lid = typeof data?.lid === 'number' ? data.lid : null;
 
       if (type === 'MessageReceived') {
-        setScreen({ name: 'messages' });
+        navigate({ name: 'messages' });
       } else if (type === 'PtpReminder' || type === 'DueInstallmentReminder') {
         if (lid !== null) {
-          setScreen({ name: 'debtDetail', loanId: String(lid) });
+          navigate({ name: 'debtDetail', loanId: String(lid) });
         }
       } else if (type === 'PaymentPlanReminder') {
         if (lid !== null) {
-          setScreen({ name: 'paymentPlan', lid });
+          navigate({ name: 'paymentPlan', lid });
         }
       }
       // Unknown trigger types fall through — the home screen is the safe default.
     });
+    // navigate reads from refs, safe to pin deps empty.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const navigate = (next: Screen) => {
-    setHistory(prev => [...prev, screen]);
-    setScreen(next);
-  };
-
-  const goBack = () => {
-    setHistory(prev => {
-      const copy = [...prev];
-      const last = copy.pop();
-      if (last) setScreen(last);
-      return copy;
-    });
-  };
 
   if (isLoading) {
     return (

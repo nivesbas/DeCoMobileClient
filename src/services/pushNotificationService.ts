@@ -29,14 +29,29 @@ interface PushTokenUpsertResponse {
 // a notification arrives while the app is open. Without this, push messages
 // arrive silently and only the tap handler fires — poor UX for PtpReminder
 // and MessageReceived, which users should see immediately.
+//
+// Exception: while MessagesScreen is mounted we suppress the banner for
+// `MessageReceived` — the chat is already on screen and polling surfaces the
+// new message inline, so a banner would be visual noise on top of content the
+// user is already looking at.
+let suppressChatBanners = false;
+
+export function setSuppressChatBanners(value: boolean): void {
+  suppressChatBanners = value;
+}
+
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const type = notification.request.content.data?.type;
+    const suppressed = suppressChatBanners && type === 'MessageReceived';
+    return {
+      shouldShowAlert: !suppressed,
+      shouldPlaySound: !suppressed,
+      shouldSetBadge: false,
+      shouldShowBanner: !suppressed,
+      shouldShowList: !suppressed,
+    };
+  },
 });
 
 // ── Public API ─────────────────────────────────────────────────────────────

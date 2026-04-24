@@ -2,8 +2,11 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, Alert, ActivityIndicator, Keyboard, BackHandler,
+  AppState,
 } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { sendMessage, getMessageHistory } from '../services/messageService';
+import { setSuppressChatBanners } from '../services/pushNotificationService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { MessageHistoryItem } from '../types/api';
@@ -40,10 +43,54 @@ export default function MessagesScreen({ onBack }: Props) {
     fetchMessages();
   }, [fetchMessages]);
 
-  // Poll for new messages every 5 seconds
+  // Poll for new messages every 5 seconds — but only while the app is in the
+  // foreground. Pausing in background avoids a data/radio drain when the user
+  // backgrounds the app without explicitly leaving the chat screen.
   useEffect(() => {
-    const interval = setInterval(() => fetchMessages(true), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(() => fetchMessages(true), POLL_INTERVAL_MS);
+    };
+    const stop = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = null;
+    };
+
+    if (AppState.currentState === 'active') start();
+
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        fetchMessages(true);
+        start();
+      } else {
+        stop();
+      }
+    });
+
+    return () => {
+      sub.remove();
+      stop();
+    };
+  }, [fetchMessages]);
+
+  // Suppress the "MessageReceived" push banner while the chat is open — the
+  // message will show up in the list via the next poll (or the listener below
+  // which refreshes immediately). Also refresh on every incoming MessageReceived
+  // so new operator messages appear without the 5 s polling gap.
+  useEffect(() => {
+    setSuppressChatBanners(true);
+    const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
+      if (notification.request.content.data?.type === 'MessageReceived') {
+        fetchMessages(true);
+      }
+    });
+    return () => {
+      setSuppressChatBanners(false);
+      receivedSub.remove();
+    };
   }, [fetchMessages]);
 
   // Android back gesture → go back to Home
