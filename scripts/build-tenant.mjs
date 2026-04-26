@@ -8,11 +8,15 @@ import { dirname } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
-const arg = process.argv.find((a) => a.startsWith('--tenant='));
-const tenant = arg?.split('=')[1] ?? process.env.TENANT;
+const tenantArg = process.argv.find((a) => a.startsWith('--tenant='));
+const tenant = tenantArg?.split('=')[1] ?? process.env.TENANT;
+const isAab = process.argv.includes('--aab');
+const skipInstall = process.argv.includes('--no-install') || isAab;
 
 if (!tenant) {
-  console.error('Usage: npm run build:tenant -- --tenant=<slug>');
+  console.error('Usage: npm run build:tenant -- --tenant=<slug> [--aab] [--no-install]');
+  console.error('  --aab          Build .aab for Play Store upload (skips adb install)');
+  console.error('  --no-install   Skip adb install');
   process.exit(1);
 }
 
@@ -44,12 +48,25 @@ function run(cmd, args, opts = {}) {
   }
 }
 
-console.log(`=== Building tenant "${tenant}" ===`);
+console.log(`=== Building tenant "${tenant}" ${isAab ? '(AAB for Play Store)' : '(APK for side-load)'} ===`);
 
 run('npx', ['expo', 'prebuild', '--platform', 'android', '--clean'], { cwd: repoRoot });
 
 const gradlew = isWin ? '.\\gradlew.bat' : './gradlew';
-run(gradlew, ['assembleRelease'], { cwd: resolve(repoRoot, 'android') });
+const gradleTask = isAab ? 'bundleRelease' : 'assembleRelease';
+run(gradlew, [gradleTask], { cwd: resolve(repoRoot, 'android') });
+
+if (isAab) {
+  const aab = resolve(repoRoot, 'android/app/build/outputs/bundle/release/app-release.aab');
+  if (!existsSync(aab)) {
+    console.error(`AAB not found at ${aab}`);
+    process.exit(1);
+  }
+  console.log(`\n=== Done. AAB built: ${aab} ===`);
+  console.log('Upload to Play Console → Internal/Closed testing → Create new release.');
+  console.log('First upload will trigger Play App Signing enrollment — accept Google-managed app signing.');
+  process.exit(0);
+}
 
 const apk = resolve(repoRoot, 'android/app/build/outputs/apk/release/app-release.apk');
 if (!existsSync(apk)) {
@@ -58,6 +75,12 @@ if (!existsSync(apk)) {
 }
 
 console.log(`\nAPK built: ${apk}`);
+
+if (skipInstall) {
+  console.log(`=== Done. Skipped adb install. ===`);
+  process.exit(0);
+}
+
 console.log('Installing on connected device (user 0)...');
 run('adb', ['install', '-r', '--user', '0', apk]);
 

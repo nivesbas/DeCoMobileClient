@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator,
+  ActivityIndicator, BackHandler,
 } from 'react-native';
 import { getPaymentPlan } from '../services/paymentPlanService';
 import { t } from '../i18n/translations';
@@ -37,6 +37,15 @@ export default function PaymentPlanScreen({ lid, onBack }: Props) {
       }
     })();
   }, [lid]);
+
+  // Android back gesture → go back via prop (matches sibling screens).
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onBack();
+      return true;
+    });
+    return () => handler.remove();
+  }, [onBack]);
 
   const formatAmount = (amount: number, currency: string) =>
     `${amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} ${currency}`;

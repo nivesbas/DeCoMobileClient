@@ -16,6 +16,13 @@ interface TranslationResponse {
 /**
  * Fetch translations for a locale from the backend API.
  * Caches in AsyncStorage and returns cached version if fetch fails.
+ *
+ * NOTE: this is the only call in the app that talks to the backend directly
+ * instead of going through the gateway — a deviation from the "gateway-only"
+ * architecture documented in README.md. The endpoint is public (no auth) and
+ * returns lookup data, so the security blast radius is limited, but the
+ * eventual fix is to expose `/localization/translations/{locale}` on the
+ * gateway and drop `backendUrl` from the tenant config entirely.
  */
 export async function fetchTranslations(
   locale: string,

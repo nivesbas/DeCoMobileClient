@@ -69,7 +69,7 @@ npm start
 
 Scan the QR with Expo Go app. Limitations: push notifications won't work in Expo Go on SDK 53+ — for that you need a dev build (step 4).
 
-### 4. Build + install a tenant APK
+### 4. Build + install a tenant APK (side-load on dev device)
 
 ```bash
 npm run build:tenant -- --tenant=uril
@@ -80,15 +80,65 @@ then `adb install -r --user 0` onto the connected device. The `--user 0` flag is
 required on Samsung OneUI to avoid the APK cloning into User 95 (DUAL_APP).
 
 APK lands at `android/app/build/outputs/apk/release/app-release.apk` (~5–7 min on
-first run, ~60–90 s warm). Release variant is signed with the Expo-generated
-`android/app/debug.keystore` — fine for internal side-load. Do NOT ship to Play
-Store; that needs a real upload key.
+first run, ~60–90 s warm). The release variant is signed with the upload keystore
+when `DECO_UPLOAD_*` Gradle properties are present (see [Play Store builds](#5-play-store-builds-aab)),
+otherwise it falls back to the Expo-generated `debug.keystore` — that fallback is
+fine for internal side-load only.
 
-`--clean` regenerates `android/` from `app.config.ts` every run, so the debug
-keystore changes on each tenant switch. Devices with an older build of the same
-bundle id must uninstall before reinstalling.
+`--clean` regenerates `android/` from `app.config.ts` every run. The release
+signing config is re-injected on every prebuild by `plugins/withReleaseSigning.js`,
+so it survives `--clean`. Devices with an older build of the same bundle id and
+a different signing key must uninstall before reinstalling (signature mismatch).
 
-### 5. Fast JS-only rebuild (same tenant)
+### 5. Play Store builds (AAB)
+
+For Play Store uploads (closed test, internal/production tracks) you need a
+signed `.aab`, not an APK. One-time bootstrap, then `npm run build:aab`.
+
+**One-time keystore bootstrap (per developer mašina):**
+
+```bash
+npm run keystore:bootstrap
+```
+
+This generates `~/.android-keystores/uril-deco-upload.jks` (RSA 2048, 27-year
+validity) and writes the password + paths to `~/.gradle/gradle.properties` —
+both files live outside the repo. **Back up the .jks immediately** to a password
+manager attachment or encrypted external drive. Losing it requires a Play support
+ticket to reset the upload key (only possible because we use Play App Signing —
+see below).
+
+**Build:**
+
+```bash
+npm run build:aab -- --tenant=uril
+```
+
+AAB lands at `android/app/build/outputs/bundle/release/app-release.aab` (~10–12 min
+clean build). The script does not run `adb install` — Play Console wants the file.
+
+**First-time Play Console upload:**
+
+1. Play Console → **App integrity** (left menu) → enroll **Play App Signing**
+   (the Google-managed default for new apps). The upload key fingerprint Google
+   expects is in `keytool -list -v` output:
+   - SHA-256 (current key, **2026-04-26**): `80:C6:31:A4:B5:53:54:3F:28:C7:AC:4D:8A:20:A1:1A:24:6C:D0:7F:11:F5:85:B9:33:A6:4A:DC:C7:74:BD:07`
+   - SHA-1: `E2:34:8D:C1:B7:2D:1B:5B:64:32:8D:BB:9B:01:F4:49:FC:70:3E:E0`
+2. **Closed testing** → Create new release → upload `app-release.aab` → fill
+   release notes → Save → Review → Roll out.
+3. Add testers (Google Groups or comma-separated emails).
+4. The 14-day closed test clock starts when the first tester opens the install
+   link from Play (not when the AAB is uploaded).
+
+**Subsequent uploads:** bump `versionCode` (and usually `versionName`) in
+`app.config.ts` before building — Play rejects duplicate `versionCode`s.
+
+**Why Play App Signing:** Google holds the production app signing key in their
+KMS. We only manage the upload key. If the upload key is ever lost or compromised,
+we ask Google to rotate it. Without Play App Signing, losing the key kills the
+app forever (no way to push updates).
+
+### 6. Fast JS-only rebuild (same tenant)
 
 If the only thing you changed is TypeScript / JSX (no native module, no
 `app.config.ts` or tenant-config edit), skip prebuild:
@@ -150,7 +200,19 @@ Fresh OTP login skips biometric (user just proved they hold the phone number). R
 
 ### Gateway-only, no direct backend
 
-Every API call goes to `https://gw.demo.uril.rs/api/v1`. The backend is never exposed to the mobile app directly — the gateway enforces rate limits, auth, and the limited surface of endpoints the customer app is allowed to hit.
+Almost every API call goes to `https://gw.demo.uril.rs/api/v1`. The gateway enforces rate limits, auth, and the limited surface of endpoints the customer app is allowed to hit.
+
+The single exception is the public translation lookup (`/localization/translations/{locale}`), which goes to `backendUrl` directly because the endpoint is unauthenticated and the gateway doesn't yet expose it. See the comment on `src/services/translationService.ts` — this is a known deviation that should be closed by moving the endpoint behind the gateway.
+
+### TLS pinning (Network Security Config)
+
+`plugins/withCertPinning.js` writes `android/app/src/main/res/xml/network_security_config.xml` on every prebuild and wires it to the `<application>` tag. The pin set is the public-key (SPKI) hashes of every active Let's Encrypt intermediate (E5–E8, R10, R11) plus the ISRG Root X1.
+
+**Why pin intermediates and not the leaf:** LE leaf certs renew every ~90 days. Pinning a leaf would brick the app on every renewal. Pinning the intermediate chain blocks rogue-CA MITM (corporate proxies, malware-installed roots, custom user CAs) without coupling to renewal cadence.
+
+**Pin expiration:** `2027-04-26` (one year). After expiration the app falls back to system trust — graceful degrade, not lockout. Bump the date and refresh pins on every plugin edit; track LE intermediate rotations at https://letsencrypt.org/certificates/.
+
+**If we migrate off LE** (private CA, DigiCert, etc.) the pin set in `withCertPinning.js` must be regenerated for the new issuer — the LE pins will not match.
 
 ### Polling for chat, push for everything else
 

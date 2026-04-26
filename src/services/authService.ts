@@ -36,7 +36,7 @@ export async function register(
   );
 
   if (!response.data) {
-    console.error('[Auth] register returned no data:', JSON.stringify(response));
+    console.error('[Auth] register returned no data', { correlationId: response.correlationId });
     throw new Error(response.message ?? 'Registration failed.');
   }
 
@@ -62,7 +62,7 @@ export async function verifyOtp(
   );
 
   if (!response.data) {
-    console.error('[Auth] verify-otp returned no data:', JSON.stringify(response));
+    console.error('[Auth] verify-otp returned no data', { correlationId: response.correlationId });
     throw new Error(response.message ?? 'Verification failed.');
   }
 

@@ -64,6 +64,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       edgeToEdgeEnabled: true,
       softwareKeyboardLayoutMode: 'pan',
+      // Block adb/cloud backups of app data. SecureStore values are already
+      // Keystore-encrypted, but AsyncStorage (translations cache, locale) is not,
+      // and we don't want a debtor's phone backup to expose chat or debt history.
+      allowBackup: false,
+      // Explicit permission whitelist. Without this, Expo + auto-linked native
+      // modules pull in a wider default set (READ/WRITE_EXTERNAL_STORAGE,
+      // SYSTEM_ALERT_WINDOW, USE_FINGERPRINT) that we do not need and that
+      // raise unnecessary flags during Play Store review.
+      permissions: [
+        'INTERNET',
+        'VIBRATE',
+        'USE_BIOMETRIC',
+        'POST_NOTIFICATIONS',
+      ],
     },
     notification: {
       color: tenant.brandColor,
@@ -77,6 +91,22 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           defaultChannel: 'default',
         },
       ],
+      [
+        'expo-build-properties',
+        {
+          // R8 + resource shrinking on release. Reduces APK size (~30%) and
+          // strips symbols/string-table entries that make reverse-engineering
+          // the wire contract trivial. Keep rules for React Native runtime
+          // come from android/app/proguard-rules.pro.
+          android: {
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+          },
+        },
+      ],
+      './plugins/withReleaseSigning.js',
+      './plugins/withCertPinning.js',
+      './plugins/withDropPermissions.js',
     ],
     extra: {
       eas: {

@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import * as Crypto from 'expo-crypto';
 import { CONFIG } from '../constants/config';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -30,7 +31,6 @@ class AuthError extends ApiError {
 
 // Token refresh listener — set by useAuth hook
 let onTokenRefreshNeeded: (() => Promise<boolean>) | null = null;
-let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
 
 export function setTokenRefreshHandler(handler: () => Promise<boolean>) {
@@ -40,8 +40,10 @@ export function setTokenRefreshHandler(handler: () => Promise<boolean>) {
 async function getDeviceId(): Promise<string> {
   let deviceId = await SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.DEVICE_ID);
   if (!deviceId) {
-    // Generate a stable unique device identifier
-    deviceId = `device-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+    // Generate a stable unique device identifier. The backend binds refresh
+    // tokens to (CID, deviceId), so collisions or guessable IDs would let one
+    // device replay another's refresh token — use a CSPRNG, not Math.random.
+    deviceId = `device-${Crypto.randomUUID()}`;
     await SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.DEVICE_ID, deviceId);
   }
   return deviceId;
@@ -85,17 +87,20 @@ async function request<T>(
 
     clearTimeout(timeoutId);
 
-    // Handle 401 — try token refresh once
+    // Handle 401 — coalesce concurrent refreshes onto a single promise.
+    // Only the creator clears `refreshPromise` (in .finally), so a 4th caller
+    // that arrives mid-refresh await-s the same in-flight promise instead of
+    // spawning a second refresh with the already-rotated refresh token (which
+    // backend reuse-detection would invalidate, killing the session).
     if (response.status === 401 && !skipAuth && onTokenRefreshNeeded) {
-      if (!isRefreshing) {
-        isRefreshing = true;
-        refreshPromise = onTokenRefreshNeeded();
+      if (!refreshPromise) {
+        const handler = onTokenRefreshNeeded;
+        refreshPromise = handler().finally(() => {
+          refreshPromise = null;
+        });
       }
 
       const refreshed = await refreshPromise;
-      isRefreshing = false;
-      refreshPromise = null;
-
       if (refreshed) {
         // Retry original request with new token
         return request<T>(method, path, options);
@@ -115,7 +120,7 @@ async function request<T>(
     try {
       data = text ? JSON.parse(text) : null;
     } catch {
-      console.error(`[API] Invalid JSON from ${method} ${path}:`, text.slice(0, 500));
+      console.error(`[API] Invalid JSON from ${method} ${path} (status ${response.status}, ${text.length} chars)`);
       throw new ApiError(response.status, 'Invalid response from server.');
     }
 

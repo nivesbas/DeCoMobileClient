@@ -39,27 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT),
         ]);
 
-        console.log('[Auth] Restore check:', {
-          hasToken: !!token,
-          customerId,
-          expiresAt,
-          now: Date.now(),
-          expired: expiresAt ? Date.now() > Number(expiresAt) : 'no expiry',
-        });
-
         if (token && customerId) {
           // Token exists — check if expired and try refresh
           if (expiresAt && Date.now() > Number(expiresAt)) {
-            console.log('[Auth] Access token expired, attempting refresh...');
             const refreshed = await authService.refreshToken();
             if (refreshed) {
-              console.log('[Auth] Token refreshed successfully');
               setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
               // Re-register push token on session restore — it may have rotated
               // while the app was backgrounded. Fire-and-forget.
               void registerForPushNotificationsAsync();
             } else {
-              console.log('[Auth] Refresh failed, user must re-login');
               setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
             }
           } else {
