@@ -239,9 +239,18 @@ export default function HomeScreen({ onNavigate }: Props) {
             resizeMode="contain"
           />
         </View>
-        <TouchableOpacity onPress={handleCloseApp} style={styles.closeButton}>
-          <Text style={styles.closeIcon}>✕</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={() => onNavigate('Settings')}
+            style={styles.settingsButton}
+            accessibilityLabel={t('settings_title')}
+          >
+            <Text style={styles.settingsIcon}>⚙</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCloseApp} style={styles.closeButton}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Total summary */}
@@ -338,6 +347,23 @@ const styles = StyleSheet.create({
   headerLogo: {
     height: 64,
     width: 240,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  settingsButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  settingsIcon: {
+    fontSize: 18,
+    color: COLORS.textMuted,
   },
   closeButton: {
     width: 36,

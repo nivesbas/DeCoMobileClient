@@ -14,6 +14,8 @@ import PromiseScreen from './src/screens/PromiseScreen';
 import PaymentPlanScreen from './src/screens/PaymentPlanScreen';
 import PaymentQrScreen from './src/screens/PaymentQrScreen';
 import BiometricLockScreen from './src/screens/BiometricLockScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
+import DeleteAccountScreen from './src/screens/DeleteAccountScreen';
 import { COLORS } from './src/constants/theme';
 
 type Screen =
@@ -24,7 +26,9 @@ type Screen =
   | { name: 'messages' }
   | { name: 'promise'; loanId?: string }
   | { name: 'paymentPlan'; lid: number }
-  | { name: 'paymentQr'; loanId: string };
+  | { name: 'paymentQr'; loanId: string }
+  | { name: 'settings' }
+  | { name: 'deleteAccount' };
 
 function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
@@ -167,6 +171,31 @@ function AppContent() {
     );
   }
 
+  if (screen.name === 'settings') {
+    return (
+      <SettingsScreen
+        onBack={goBack}
+        onDeleteAccount={() => navigate({ name: 'deleteAccount' })}
+      />
+    );
+  }
+
+  if (screen.name === 'deleteAccount') {
+    return (
+      <DeleteAccountScreen
+        onBack={goBack}
+        // After successful deletion the auth state has already been cleared in
+        // the deleteAccount() callback in useAuth — auth redirect will surface
+        // RegisterScreen on the next render. We still reset history + screen
+        // so an Android back press can't surface the deleted-account state.
+        onSuccess={() => {
+          historyRef.current = [];
+          setScreen({ name: 'register' });
+        }}
+      />
+    );
+  }
+
   // Default: Home
   return (
     <HomeScreen
@@ -176,6 +205,7 @@ function AppContent() {
           Promise: { name: 'promise', loanId: params?.loanId },
           Messages: { name: 'messages' },
           PaymentPlan: { name: 'paymentPlan', lid: params?.lid },
+          Settings: { name: 'settings' },
         };
         navigate(screenMap[name] ?? { name: 'home' });
       }}

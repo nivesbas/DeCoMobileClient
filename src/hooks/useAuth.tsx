@@ -10,13 +10,15 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   customerId: string | null;
+  phoneNumber: string | null;
   isRestoredSession: boolean; // true if session was restored from storage (needs biometric)
 }
 
 interface AuthContextValue extends AuthState {
   register: (customerId: string, phoneNumber: string) => Promise<RegisterResponse>;
-  verifyOtp: (customerId: string, otpCode: string) => Promise<VerifyOtpResponse>;
+  verifyOtp: (customerId: string, otpCode: string, phoneNumber?: string) => Promise<VerifyOtpResponse>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     isAuthenticated: false,
     customerId: null,
+    phoneNumber: null,
     isRestoredSession: false,
   });
 
@@ -33,9 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const [token, customerId, expiresAt] = await Promise.all([
+        const [token, customerId, phoneNumber, expiresAt] = await Promise.all([
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.ACCESS_TOKEN),
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.CUSTOMER_ID),
+          SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.PHONE_NUMBER),
           SecureStore.getItemAsync(CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT),
         ]);
 
@@ -44,23 +48,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (expiresAt && Date.now() > Number(expiresAt)) {
             const refreshed = await authService.refreshToken();
             if (refreshed) {
-              setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+              setState({ isLoading: false, isAuthenticated: true, customerId, phoneNumber, isRestoredSession: true });
               // Re-register push token on session restore — it may have rotated
               // while the app was backgrounded. Fire-and-forget.
               void registerForPushNotificationsAsync();
             } else {
-              setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+              setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
             }
           } else {
-            setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: true });
+            setState({ isLoading: false, isAuthenticated: true, customerId, phoneNumber, isRestoredSession: true });
             void registerForPushNotificationsAsync();
           }
         } else {
-          setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+          setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
         }
       } catch (err) {
         console.error('[Auth] Restore failed:', err);
-        setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+        setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
       }
     })();
   }, []);
@@ -70,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokenRefreshHandler(async () => {
       const success = await authService.refreshToken();
       if (!success) {
-        setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+        setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
       }
       return success;
     });
@@ -80,11 +84,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authService.register(customerId, phoneNumber);
   }, []);
 
-  const verifyOtp = useCallback(async (customerId: string, otpCode: string) => {
-    const result = await authService.verifyOtp(customerId, otpCode);
+  const verifyOtp = useCallback(async (customerId: string, otpCode: string, phoneNumber?: string) => {
+    const result = await authService.verifyOtp(customerId, otpCode, phoneNumber);
     if (result.success) {
       // Fresh login — no biometric needed
-      setState({ isLoading: false, isAuthenticated: true, customerId, isRestoredSession: false });
+      setState({ isLoading: false, isAuthenticated: true, customerId, phoneNumber: phoneNumber ?? null, isRestoredSession: false });
       // Fresh login is the ideal moment to ask for push permission — we've
       // just earned trust via OTP, and the token lands before any scheduled
       // job fires for this customer. Fire-and-forget on purpose; registration
@@ -96,11 +100,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await authService.logout();
-    setState({ isLoading: false, isAuthenticated: false, customerId: null, isRestoredSession: false });
+    setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
+  }, []);
+
+  const deleteAccount = useCallback(async () => {
+    // Server side first — throws on failure so the screen can show an error
+    // and the local session stays intact (user can retry).
+    await authService.deleteAccount();
+    setState({ isLoading: false, isAuthenticated: false, customerId: null, phoneNumber: null, isRestoredSession: false });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, register, verifyOtp, logout }}>
+    <AuthContext.Provider value={{ ...state, register, verifyOtp, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

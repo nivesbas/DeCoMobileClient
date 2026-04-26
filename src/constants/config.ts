@@ -27,6 +27,7 @@ export const CONFIG = {
     REFRESH_TOKEN: 'deco_refresh_token',
     DEVICE_ID: 'deco_device_id',
     CUSTOMER_ID: 'deco_customer_id',
+    PHONE_NUMBER: 'deco_phone_number',
     TOKEN_EXPIRES_AT: 'deco_token_expires_at',
     LOCALE: 'deco_locale',
   },

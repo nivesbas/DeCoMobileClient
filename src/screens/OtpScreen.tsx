@@ -43,7 +43,7 @@ export default function OtpScreen({ customerId, phoneNumber, onBack }: Props) {
     setLoading(true);
 
     try {
-      const result = await verifyOtp(customerId, code);
+      const result = await verifyOtp(customerId, code, phoneNumber);
       if (result.success) {
         // Auth state will change → App re-renders → HomeScreen loads
         console.log('[OTP] Verification successful, transitioning to Home...');

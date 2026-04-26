@@ -46,6 +46,7 @@ export async function register(
 export async function verifyOtp(
   customerId: string,
   otpCode: string,
+  phoneNumber?: string,
 ): Promise<VerifyOtpResponse> {
   const deviceId = await getDeviceId();
 
@@ -68,9 +69,12 @@ export async function verifyOtp(
 
   const result = response.data;
 
-  // Store tokens on success
+  // Store tokens on success. PhoneNumber is persisted (when caller passes it)
+  // so DeleteAccountScreen can verify the user typed their own number even
+  // after a session restore. SecureStore is Keystore-encrypted so this is no
+  // worse than the existing customerId/refresh token persistence.
   if (result.success && result.accessToken && result.refreshToken) {
-    await Promise.all([
+    const writes: Promise<void>[] = [
       SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.ACCESS_TOKEN, result.accessToken),
       SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN, result.refreshToken),
       SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.CUSTOMER_ID, customerId),
@@ -78,7 +82,11 @@ export async function verifyOtp(
         CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT,
         String(Date.now() + (result.accessTokenExpiresInSeconds ?? 900) * 1000),
       ),
-    ]);
+    ];
+    if (phoneNumber) {
+      writes.push(SecureStore.setItemAsync(CONFIG.STORAGE_KEYS.PHONE_NUMBER, phoneNumber));
+    }
+    await Promise.all(writes);
   }
 
   return result;
@@ -136,6 +144,34 @@ export async function logout(): Promise<void> {
     SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.ACCESS_TOKEN),
     SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN),
     SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.CUSTOMER_ID),
+    SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT),
+  ]);
+}
+
+/**
+ * Permanently delete the user's account on the server (GDPR / Play Store
+ * mandate). Strips PII (phone, sessions) from every device row of the calling
+ * customer and deletes their push tokens. Bank-side debt and message history
+ * is retained per legal-retention rules and is unaffected.
+ *
+ * On success, the local session is cleared just like logout(). Throws if the
+ * server call fails — the caller decides whether to retry or surface the
+ * error to the user. The token is sent in the Authorization header by
+ * apiClient automatically.
+ */
+export async function deleteAccount(): Promise<void> {
+  // Server-side erasure first — if it fails, we keep the local session intact
+  // so the user can retry. apiClient throws ApiError on non-2xx.
+  await api.delete('/auth/account');
+
+  // Mirror logout's local cleanup. Don't reuse logout() because that would
+  // POST /auth/deregister, which is redundant — the account-deletion SP
+  // already revoked all device sessions server-side.
+  await Promise.all([
+    SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.ACCESS_TOKEN),
+    SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.REFRESH_TOKEN),
+    SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.CUSTOMER_ID),
+    SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.PHONE_NUMBER),
     SecureStore.deleteItemAsync(CONFIG.STORAGE_KEYS.TOKEN_EXPIRES_AT),
   ]);
 }

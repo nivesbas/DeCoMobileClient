@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeCo — Politika privatnosti / Privacy Policy</title>
+<meta name="description" content="DeCo mobile app — Privacy Policy / Politika privatnosti. UrilSolutions.">
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #5f6368;
+    --accent: #0066CC;
+    --bg: #ffffff;
+    --code-bg: #f5f7fa;
+    --border: #e1e4e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    margin: 0;
+    padding: 0 1.25rem;
+    line-height: 1.6;
+  }
+  main {
+    max-width: 760px;
+    margin: 2rem auto 4rem;
+  }
+  h1 { font-size: 1.85rem; margin-top: 2.5rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; }
+  h2 { font-size: 1.3rem; margin-top: 2rem; color: var(--accent); }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; }
+  p, li { font-size: 1rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  code { background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.92em; }
+  a { color: var(--accent); }
+  a:hover { text-decoration: underline; }
+  .lang-switch {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    margin: 0 -1.25rem 1.5rem;
+    padding-left: 1.25rem;
+    z-index: 10;
+  }
+  .lang-switch a {
+    margin-right: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  .lang-section { padding-top: 1rem; }
+  .lang-section[hidden] { display: none; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+  @media (max-width: 600px) {
+    body { padding: 0 1rem; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.15rem; }
+    table { font-size: 0.88rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="lang-switch">
+  <a href="#sr" id="link-sr">Srpski</a>
+  <a href="#en" id="link-en">English</a>
+</nav>
+
+<main>
+
+<!-- ── SR ─────────────────────────────────────────────────────────────────── -->
+<section id="sr" class="lang-section">
+<h1>Politika privatnosti — DeCo aplikacija</h1>
+<p class="meta">Verzija 1.0 — važi od 26. aprila 2026.</p>
+
+<p>DeCo je mobilna aplikacija namenjena klijentima kompanije <strong>UrilSolutions</strong> (u daljem tekstu „mi", „naša kompanija") za pregled stanja duga, dogovaranje obećanja uplate (PTP), generisanje QR koda za plaćanje i komunikaciju sa našim operaterima. Ova politika opisuje koje podatke prikupljamo, zašto, koliko ih čuvamo i koja prava imate.</p>
+
+<h2>1. Ko je rukovalac podataka</h2>
+<p>Rukovalac podataka u smislu Zakona o zaštiti podataka o ličnosti („Sl. glasnik RS", br. 87/2018) i GDPR-a (Uredba EU 2016/679) je:</p>
+<p><strong>UrilSolutions</strong><br>
+Matice srpske 75, Beograd, Srbija<br>
+Matični broj: 63560073</p>
+<p>Za sva pitanja o privatnosti i zaštiti podataka kontaktirajte: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong></p>
+
+<h2>2. Koje podatke prikupljamo i zašto</h2>
+
+<h3>2.1 Podaci koje aktivno unosite</h3>
+<table>
+<tr><th>Podatak</th><th>Svrha</th><th>Pravni osnov</th></tr>
+<tr><td>Matični broj / ID klijenta</td><td>Identifikacija u našem sistemu naplate</td><td>Izvršenje ugovora</td></tr>
+<tr><td>Broj telefona</td><td>Slanje OTP koda za prijavu, potvrda identiteta</td><td>Izvršenje ugovora</td></tr>
+<tr><td>Sadržaj poruka prema operateru</td><td>Komunikacija u vezi vašeg duga</td><td>Izvršenje ugovora</td></tr>
+<tr><td>Iznos i datum obećanja uplate (PTP)</td><td>Evidencija dogovora</td><td>Izvršenje ugovora</td></tr>
+</table>
+
+<h3>2.2 Podaci koje prikupljamo automatski</h3>
+<table>
+<tr><th>Podatak</th><th>Svrha</th><th>Pravni osnov</th></tr>
+<tr><td>ID uređaja (anoniman UUID)</td><td>Vezivanje sesije za uređaj, sprečavanje neovlašćenog pristupa</td><td>Legitimni interes (sigurnost)</td></tr>
+<tr><td>Push token (FCM)</td><td>Slanje notifikacija (npr. nova poruka operatera, podsetnik o dugu)</td><td>Pristanak (možete isključiti u podešavanjima sistema)</td></tr>
+<tr><td>Verzija aplikacije, verzija OS-a</td><td>Tehnička podrška, usmeravanje na obavezne nadogradnje</td><td>Legitimni interes</td></tr>
+<tr><td>Vreme prijave i odjave</td><td>Sigurnosna evidencija</td><td>Legitimni interes (sigurnost)</td></tr>
+</table>
+
+<h3>2.3 Šta NE prikupljamo</h3>
+<p>Eksplicitno NE prikupljamo:</p>
+<ul>
+<li>Lokaciju uređaja (GPS)</li>
+<li>Listu kontakata</li>
+<li>Slike, video ili audio sa uređaja</li>
+<li>Pristup kameri ili mikrofonu</li>
+<li>ID dokumenta (lična karta, pasoš)</li>
+<li>Bilo koje podatke iz drugih aplikacija na uređaju</li>
+</ul>
+<p>Aplikacija ne sadrži reklame, ne koristi analitičke alate trećih lica (Google Analytics, Facebook Pixel, itd.), ne deli podatke sa oglašivačima.</p>
+
+<h3>2.4 Biometrijski podaci</h3>
+<p>Aplikacija koristi otisak prsta ili Face ID <strong>isključivo lokalno na vašem uređaju</strong> za otključavanje aplikacije pri ponovnom otvaranju. Biometrijski podaci se nikada ne prenose na naš server niti gde drugde — operacija provere se obavlja u sigurnom enklavu vašeg telefona (Android Keystore / iOS Secure Enclave).</p>
+
+<h2>3. Sa kim delimo podatke</h2>
+<p><strong>Google LLC (Firebase Cloud Messaging)</strong> — push token i sadržaj notifikacija prolaze kroz Google FCM infrastrukturu radi isporuke notifikacija. Google čuva ove podatke u skladu sa svojom politikom privatnosti.</p>
+<p><strong>Bančin sistem CRM</strong> — vaši finansijski podaci (dugovanja, krediti, uplate) se nalaze u sistemu banke ili davaoca kredita kome ste klijent. UrilSolutions pristupa tim podacima u svojstvu obrađivača (procesora) na osnovu ugovora sa odgovarajućom finansijskom institucijom.</p>
+<p>Ne prodajemo podatke trećim licima. Ne delimo podatke u marketinške svrhe.</p>
+
+<h2>4. Koliko dugo čuvamo podatke</h2>
+<table>
+<tr><th>Podatak</th><th>Period čuvanja</th></tr>
+<tr><td>Aktivan nalog (broj telefona, ID uređaja, push token)</td><td>Dok je nalog aktivan</td></tr>
+<tr><td>Posle brisanja naloga: poruke, PTP, evidencija duga</td><td>U skladu sa zakonskim obavezama (Zakon o zaštiti potrošača, Zakon o bankama, propisi NBS-a) — minimum 5 godina, do 10 godina za potrošačke kredite</td></tr>
+<tr><td>Sadržaj sesija (refresh token, OTP)</td><td>Do isteka sesije ili 30 dana, šta god je kraće</td></tr>
+<tr><td>Audit logovi (vreme prijave/odjave)</td><td>1 godina</td></tr>
+</table>
+
+<h2>5. Bezbednost podataka</h2>
+<ul>
+<li>Sva komunikacija između aplikacije i naših servera je šifrovana TLS 1.2+ protokolom.</li>
+<li>Aplikacija primenjuje <strong>certificate pinning</strong> — odbija konekciju ako sertifikat servera ne odgovara unapred poznatom skupu otisaka.</li>
+<li>Refresh tokeni i pristupni tokeni čuvaju se u <code>Android Keystore</code> / <code>iOS Keychain</code> — šifrovano u hardverskom modulu telefona.</li>
+<li>Backup aplikacije na Google Drive / iCloud je onemogućen — podaci ostaju na uređaju.</li>
+<li>Aplikacija primenjuje obfuskaciju koda (R8 / ProGuard) i strip-uje resurse u release verziji.</li>
+</ul>
+
+<h2>6. Vaša prava (GDPR i ZZPL)</h2>
+<p>Imate sledeća prava:</p>
+<ul>
+<li><strong>Pravo na pristup</strong> — možete tražiti kopiju svih podataka koje imamo o vama.</li>
+<li><strong>Pravo na ispravku</strong> — netačne podatke ćemo ispraviti bez odlaganja.</li>
+<li><strong>Pravo na brisanje</strong> („pravo da budem zaboravljen") — možete obrisati nalog direktno iz aplikacije: <strong>Podešavanja → Obriši nalog</strong>. Podaci se brišu u skladu sa odeljkom 7 ovog dokumenta.</li>
+<li><strong>Pravo na ograničenje obrade</strong> — možete tražiti da privremeno zaustavimo obradu vaših podataka.</li>
+<li><strong>Pravo na prenosivost</strong> — podatke možete dobiti u strukturiranom, mašinski čitljivom formatu (JSON ili CSV).</li>
+<li><strong>Pravo na prigovor</strong> — možete uložiti prigovor na obradu zasnovanu na legitimnom interesu.</li>
+</ul>
+<p>Kontakt za ostvarivanje prava: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong>. Odgovaramo u roku od 30 dana.</p>
+
+<h2>7. Brisanje naloga</h2>
+<p>Nalog možete obrisati iz aplikacije: <strong>Podešavanja → Obriši nalog</strong>. Posle potvrde:</p>
+<ul>
+<li>Vaš broj telefona se uklanja iz naše baze (zamena vrednošću <code>NULL</code>).</li>
+<li>Push token se briše iz Google FCM registra.</li>
+<li>Svi vaši uređaji se deregistruju i sesije gase.</li>
+<li>Ne možete se ponovo prijaviti istim nalogom — ako želite ponovo da koristite aplikaciju, ponovo se registrujete kao nov korisnik.</li>
+</ul>
+<p><strong>Šta ostaje:</strong> podaci o dugovanju, uplatama i istoriji poruka ostaju u sistemu naše kompanije i sistema banke u skladu sa zakonskim obavezama čuvanja (videti odeljak 4). Ovi podaci se anonimizuju u meri u kojoj je to moguće bez kršenja zakonskih obaveza.</p>
+
+<h2>8. Prijava nadzornom organu</h2>
+<p>Ako smatrate da je vaše pravo na zaštitu podataka prekršeno, imate pravo na prigovor kod:</p>
+<p><strong>Poverenika za informacije od javnog značaja i zaštitu podataka o ličnosti</strong><br>
+Bulevar kralja Aleksandra 15, 11000 Beograd<br>
+<a href="mailto:office@poverenik.rs">office@poverenik.rs</a><br>
+<a href="https://www.poverenik.rs">www.poverenik.rs</a></p>
+
+<h2>9. Izmene ove politike</h2>
+<p>Ova politika se može menjati. Bitne izmene biće saopštene kroz aplikaciju ili e-mailom (ako ste ostavili kontakt). Datum poslednje izmene je naveden na vrhu dokumenta.</p>
+</section>
+
+<hr>
+
+<!-- ── EN ─────────────────────────────────────────────────────────────────── -->
+<section id="en" class="lang-section">
+<h1>Privacy Policy — DeCo Application</h1>
+<p class="meta">Version 1.0 — effective April 26, 2026</p>
+
+<p>DeCo is a mobile application provided by <strong>UrilSolutions</strong> (hereinafter "we", "our company") to clients of financial institutions for whom we provide debt-management services. The application allows clients to view debt status, arrange Promise to Pay (PTP) commitments, generate payment QR codes, and chat with our operators. This policy describes what data we collect, why, how long we retain it, and the rights you have.</p>
+
+<h2>1. Data Controller</h2>
+<p>The data controller within the meaning of the Serbian Personal Data Protection Act (Official Gazette of RS, No. 87/2018) and the GDPR (EU Regulation 2016/679) is:</p>
+<p><strong>UrilSolutions</strong><br>
+Matice srpske 75, Belgrade, Serbia<br>
+Company registration number: 63560073</p>
+<p>For all privacy-related questions: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong></p>
+
+<h2>2. Data We Collect and Why</h2>
+
+<h3>2.1 Data You Actively Provide</h3>
+<table>
+<tr><th>Data</th><th>Purpose</th><th>Legal Basis</th></tr>
+<tr><td>Client ID / Customer ID</td><td>Identification in our debt-management system</td><td>Performance of contract</td></tr>
+<tr><td>Phone number</td><td>Sending OTP for sign-in, identity verification</td><td>Performance of contract</td></tr>
+<tr><td>Message content sent to operators</td><td>Communication regarding your debt</td><td>Performance of contract</td></tr>
+<tr><td>PTP amount and date</td><td>Recording payment commitments</td><td>Performance of contract</td></tr>
+</table>
+
+<h3>2.2 Data Collected Automatically</h3>
+<table>
+<tr><th>Data</th><th>Purpose</th><th>Legal Basis</th></tr>
+<tr><td>Device ID (anonymous UUID)</td><td>Binding session to device, preventing unauthorized access</td><td>Legitimate interest (security)</td></tr>
+<tr><td>Push token (FCM)</td><td>Delivering push notifications (new operator messages, debt reminders)</td><td>Consent (revocable in OS settings)</td></tr>
+<tr><td>App version, OS version</td><td>Technical support, mandatory-update routing</td><td>Legitimate interest</td></tr>
+<tr><td>Sign-in / sign-out timestamps</td><td>Security audit trail</td><td>Legitimate interest (security)</td></tr>
+</table>
+
+<h3>2.3 Data We DO NOT Collect</h3>
+<p>We explicitly do NOT collect:</p>
+<ul>
+<li>Device location (GPS)</li>
+<li>Contact list</li>
+<li>Photos, videos, or audio from the device</li>
+<li>Camera or microphone access</li>
+<li>ID document data (passport, national ID)</li>
+<li>Data from other apps on the device</li>
+</ul>
+<p>The app contains no advertising, uses no third-party analytics tools (Google Analytics, Facebook Pixel, etc.), and does not share data with advertisers.</p>
+
+<h3>2.4 Biometric Data</h3>
+<p>The app uses fingerprint or Face ID <strong>exclusively locally on your device</strong> to unlock the app on subsequent opens. Biometric data is never transmitted to our servers or anywhere else — verification happens within your phone's secure enclave (Android Keystore / iOS Secure Enclave).</p>
+
+<h2>3. With Whom We Share Data</h2>
+<p><strong>Google LLC (Firebase Cloud Messaging)</strong> — push tokens and notification content pass through Google FCM infrastructure for delivery. Google retains this data per its own privacy policy.</p>
+<p><strong>Bank's CRM system</strong> — your financial data (debts, loans, payments) resides in the systems of the bank or lender of which you are a client. UrilSolutions accesses this data as a processor under contract with the relevant financial institution.</p>
+<p>We do not sell data to third parties. We do not share data for marketing purposes.</p>
+
+<h2>4. How Long We Retain Data</h2>
+<table>
+<tr><th>Data</th><th>Retention Period</th></tr>
+<tr><td>Active account (phone, device ID, push token)</td><td>While the account is active</td></tr>
+<tr><td>After account deletion: messages, PTPs, debt records</td><td>As required by law (Consumer Protection Act, Banking Act, NBS regulations) — minimum 5 years, up to 10 years for consumer credit</td></tr>
+<tr><td>Session data (refresh token, OTP)</td><td>Until session expiry or 30 days, whichever is shorter</td></tr>
+<tr><td>Audit logs (sign-in/sign-out)</td><td>1 year</td></tr>
+</table>
+
+<h2>5. Data Security</h2>
+<ul>
+<li>All communication between the app and our servers uses TLS 1.2+ encryption.</li>
+<li>The app implements <strong>certificate pinning</strong> — connections are rejected if server certificates do not match a pre-known fingerprint set.</li>
+<li>Refresh and access tokens are stored in <code>Android Keystore</code> / <code>iOS Keychain</code> — encrypted within the phone's hardware security module.</li>
+<li>Cloud backup of app data (Google Drive / iCloud) is disabled — data stays on the device.</li>
+<li>The app applies code obfuscation (R8 / ProGuard) and resource shrinking in release builds.</li>
+</ul>
+
+<h2>6. Your Rights (GDPR and Serbian PDPA)</h2>
+<p>You have the following rights:</p>
+<ul>
+<li><strong>Right of access</strong> — request a copy of all data we hold about you.</li>
+<li><strong>Right to rectification</strong> — incorrect data will be corrected without delay.</li>
+<li><strong>Right to erasure</strong> ("right to be forgotten") — delete your account directly from the app: <strong>Settings → Delete Account</strong>. Data is deleted per Section 7.</li>
+<li><strong>Right to restriction of processing</strong> — request that we temporarily halt processing your data.</li>
+<li><strong>Right to data portability</strong> — receive your data in a structured, machine-readable format (JSON or CSV).</li>
+<li><strong>Right to object</strong> — object to processing based on legitimate interest.</li>
+</ul>
+<p>Contact for exercising rights: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong>. We respond within 30 days.</p>
+
+<h2>7. Account Deletion</h2>
+<p>You can delete your account from the app: <strong>Settings → Delete Account</strong>. Upon confirmation:</p>
+<ul>
+<li>Your phone number is removed from our database (replaced with <code>NULL</code>).</li>
+<li>Push token is removed from Google FCM.</li>
+<li>All your devices are deregistered and sessions terminated.</li>
+<li>You cannot sign back in with the same account — to use the app again you must register as a new user.</li>
+</ul>
+<p><strong>What remains:</strong> debt, payment, and message-history data stays in our systems and the bank's systems as required by retention laws (see Section 4). Such data is anonymized to the extent legally possible.</p>
+
+<h2>8. Filing Complaints</h2>
+<p>If you believe your data protection rights have been violated, you have the right to lodge a complaint with:</p>
+<p><strong>Commissioner for Information of Public Importance and Personal Data Protection</strong><br>
+Bulevar kralja Aleksandra 15, 11000 Belgrade, Serbia<br>
+<a href="mailto:office@poverenik.rs">office@poverenik.rs</a><br>
+<a href="https://www.poverenik.rs">www.poverenik.rs</a></p>
+
+<h2>9. Changes to This Policy</h2>
+<p>This policy may be updated. Material changes will be communicated through the app or by email (if you have provided a contact). The date of the last revision is at the top of this document.</p>
+</section>
+
+</main>
+
+<script>
+  // Toggle visibility based on hash; default = SR
+  function showLang(lang) {
+    document.getElementById('sr').hidden = (lang !== 'sr');
+    document.getElementById('en').hidden = (lang !== 'en');
+    document.documentElement.lang = lang;
+    document.title = lang === 'en'
+      ? 'DeCo — Privacy Policy'
+      : 'DeCo — Politika privatnosti';
+  }
+  function fromHash() {
+    const h = (location.hash || '#sr').replace('#', '');
+    showLang(h === 'en' ? 'en' : 'sr');
+  }
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+</script>
+
+</body>
+</html>

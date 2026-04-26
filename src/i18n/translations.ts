@@ -114,6 +114,28 @@ const fallback = {
     yes: 'Da',
     no: 'Ne',
     cancel: 'Otkaži',
+
+    // Settings
+    settings_title: 'Podešavanja',
+    settings_language: 'Jezik',
+    settings_version: 'Verzija aplikacije',
+    settings_privacy: 'Politika privatnosti',
+    settings_open: 'Otvori',
+    settings_logout: 'Odjava',
+    settings_delete_account: 'Obriši nalog',
+
+    // Delete account
+    delete_account_title: 'Brisanje naloga',
+    delete_account_warning: 'Pažnja: Ova akcija je trajna i ne može se poništiti.',
+    delete_account_explainer: 'Brisanjem naloga uklanjamo vaš broj telefona, push token i sve sesije. Podaci o vašem dugovanju ostaju u sistemu u skladu sa zakonskim obavezama čuvanja.',
+    delete_account_confirm_label: 'Za potvrdu, ukucajte Vaš broj telefona:',
+    delete_account_confirm_placeholder: 'Vaš broj telefona',
+    delete_account_button: 'Trajno obriši nalog',
+    delete_account_button_loading: 'Brisanje...',
+    delete_account_phone_mismatch: 'Broj telefona se ne poklapa.',
+    delete_account_success_title: 'Nalog obrisan',
+    delete_account_success_message: 'Vaš nalog je uspešno obrisan.',
+    delete_account_error: 'Brisanje naloga nije uspelo. Pokušajte ponovo ili kontaktirajte podršku.',
   },
   en: {
     register_title: 'Welcome',
@@ -218,6 +240,28 @@ const fallback = {
     yes: 'Yes',
     no: 'No',
     cancel: 'Cancel',
+
+    // Settings
+    settings_title: 'Settings',
+    settings_language: 'Language',
+    settings_version: 'App version',
+    settings_privacy: 'Privacy policy',
+    settings_open: 'Open',
+    settings_logout: 'Log out',
+    settings_delete_account: 'Delete account',
+
+    // Delete account
+    delete_account_title: 'Delete account',
+    delete_account_warning: 'Warning: This action is permanent and cannot be undone.',
+    delete_account_explainer: 'Deleting your account removes your phone number, push token, and all sessions. Debt records remain in the system as required by law.',
+    delete_account_confirm_label: 'To confirm, type your phone number:',
+    delete_account_confirm_placeholder: 'Your phone number',
+    delete_account_button: 'Permanently delete account',
+    delete_account_button_loading: 'Deleting...',
+    delete_account_phone_mismatch: 'Phone number does not match.',
+    delete_account_success_title: 'Account deleted',
+    delete_account_success_message: 'Your account has been successfully deleted.',
+    delete_account_error: 'Account deletion failed. Try again or contact support.',
   },
 } as const;
 
