@@ -2,7 +2,13 @@ import type { TenantConfig } from '../../src/tenant/types';
 
 const tenant: TenantConfig = {
   slug: 'uril',
-  bundleId: 'rs.uril.deco.client',
+  // Bundle id changed 2026-04-27: original `rs.uril.deco.client` got
+  // permanently locked in Google's package-name registry by an early debug
+  // keystore signature (visible to Play Protect once a sideloaded APK ran on
+  // a Play-Services device). Recovery via support is gambling on a tight
+  // timeline; cleaner path is a fresh package name with our proper upload
+  // keystore. The `.app` suffix is the minimum disambiguator.
+  bundleId: 'rs.uril.deco.client.app',
   appName: 'DeCo',
   // Gateway: the only host the app should normally talk to. All authenticated
   // traffic + customer data flows here.

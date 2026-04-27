@@ -50,7 +50,7 @@ Firebase files are **per tenant** and gitignored. They live under `tenants/<slug
 For the URIL tenant specifically:
 
 1. Go to [Firebase Console](https://console.firebase.google.com) → project **DeCo Client App**
-2. Project Settings (gear icon) → **Your apps** → Android app `rs.uril.deco.client`
+2. Project Settings (gear icon) → **Your apps** → Android app `rs.uril.deco.client.app`
 3. Click **google-services.json** → Download
 4. Save to `tenants/uril/google-services.json`
 
