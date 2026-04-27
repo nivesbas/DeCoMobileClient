@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeCo — Brisanje naloga / Account Deletion</title>
+<meta name="description" content="DeCo mobile app — How to delete your account and what data is removed vs. retained. UrilSolutions.">
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #5f6368;
+    --accent: #0066CC;
+    --bg: #ffffff;
+    --code-bg: #f5f7fa;
+    --border: #e1e4e8;
+    --warn: #b85a00;
+    --warn-bg: #fff8ef;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    margin: 0;
+    padding: 0 1.25rem;
+    line-height: 1.6;
+  }
+  main {
+    max-width: 760px;
+    margin: 2rem auto 4rem;
+  }
+  h1 { font-size: 1.85rem; margin-top: 2.5rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; }
+  h2 { font-size: 1.3rem; margin-top: 2rem; color: var(--accent); }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; }
+  p, li { font-size: 1rem; }
+  ol li { margin-bottom: 0.4rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  code { background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 3px; font-size: 0.92em; }
+  a { color: var(--accent); }
+  a:hover { text-decoration: underline; }
+  .lang-switch {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    margin: 0 -1.25rem 1.5rem;
+    padding-left: 1.25rem;
+    z-index: 10;
+  }
+  .lang-switch a {
+    margin-right: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .meta {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  .warn {
+    background: var(--warn-bg);
+    border-left: 4px solid var(--warn);
+    padding: 0.9rem 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+  .warn strong { color: var(--warn); }
+  .lang-section { padding-top: 1rem; }
+  .lang-section[hidden] { display: none; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+  @media (max-width: 600px) {
+    body { padding: 0 1rem; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.15rem; }
+    table { font-size: 0.88rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="lang-switch">
+  <a href="#sr" id="link-sr">Srpski</a>
+  <a href="#en" id="link-en">English</a>
+</nav>
+
+<main>
+
+<!-- ── SR ─────────────────────────────────────────────────────────────────── -->
+<section id="sr" class="lang-section">
+<h1>Brisanje naloga — DeCo aplikacija</h1>
+<p class="meta">Aplikacija: <strong>DeCo</strong> (rs.uril.deco.client.app) — UrilSolutions, matični broj 63560073.</p>
+
+<h2>1. Brisanje iz aplikacije (preporučeno)</h2>
+<ol>
+<li>Otvorite DeCo aplikaciju i prijavite se.</li>
+<li>Tapnite ikonicu <strong>⚙ Podešavanja</strong> u gornjem desnom uglu početne strane.</li>
+<li>Skrolujte do dna i tapnite <strong>"Obriši nalog"</strong>.</li>
+<li>Pročitajte upozorenje, ukucajte svoj broj telefona kao potvrdu, i tapnite <strong>"Trajno obriši nalog"</strong>.</li>
+<li>Posle potvrde, automatski ćete biti odjavljeni i vraćeni na ekran za registraciju.</li>
+</ol>
+
+<h2>2. Brisanje preko email-a</h2>
+<p>Ako iz nekog razloga ne možete da pristupite aplikaciji, pošaljite email na <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong> sa zahtevom za brisanje. Navedite:</p>
+<ul>
+<li>Vaš matični broj / ID klijenta korišćen u aplikaciji</li>
+<li>Broj telefona kojim ste se prijavljivali</li>
+</ul>
+<p>Odgovor i potvrda u roku od <strong>30 dana</strong> u skladu sa GDPR-om i Zakonom o zaštiti podataka o ličnosti.</p>
+
+<h2>3. Šta se BRIŠE</h2>
+<ul>
+<li>Vaš broj telefona se uklanja iz naše baze (zamena vrednošću <code>NULL</code>)</li>
+<li>Push token se briše iz Google FCM registra</li>
+<li>Refresh tokeni se uklanjaju i sve sesije se gase</li>
+<li>Svi vaši uređaji se deregistruju</li>
+</ul>
+
+<h2>4. Šta se ZADRŽAVA</h2>
+<div class="warn">
+<p><strong>Pažnja:</strong> Određeni podaci se zadržavaju u skladu sa zakonskim obavezama čuvanja, jer ne možemo zakonski da ih obrišemo pre isteka tih rokova.</p>
+</div>
+
+<table>
+<tr><th>Podatak</th><th>Period čuvanja</th><th>Zakonska osnova</th></tr>
+<tr><td>Evidencija duga, kredita, uplata</td><td>5–10 godina</td><td>Zakon o bankama, Zakon o zaštiti potrošača, propisi NBS-a</td></tr>
+<tr><td>Istorija poruka sa operaterom</td><td>5 godina</td><td>Propisi NBS-a (komunikacija u procesu naplate)</td></tr>
+<tr><td>Obećanja uplate (PTP)</td><td>5 godina</td><td>Računovodstveni propisi</td></tr>
+<tr><td>Audit logovi (vreme prijave/odjave, IP)</td><td>1 godina</td><td>Sigurnosna evidencija (legitimni interes)</td></tr>
+</table>
+
+<p>Posle isteka zakonskih rokova, ovi podaci se brišu ili anonimizuju u meri u kojoj je to moguće.</p>
+
+<h2>5. Posle brisanja</h2>
+<p>Brisanje je <strong>trajno i ne može se poništiti</strong>. Ako se kasnije predomislite i želite ponovo da koristite DeCo, registrujte se kao nov korisnik — biće kreiran nov nalog.</p>
+
+<h2>6. Pitanja</h2>
+<p>Za sva pitanja vezana za brisanje naloga ili politiku privatnosti: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong></p>
+
+<p>Politika privatnosti u celini: <a href="../privacy-policy/">DeCo — Politika privatnosti</a></p>
+</section>
+
+<hr>
+
+<!-- ── EN ─────────────────────────────────────────────────────────────────── -->
+<section id="en" class="lang-section">
+<h1>Account Deletion — DeCo Application</h1>
+<p class="meta">App: <strong>DeCo</strong> (rs.uril.deco.client.app) — UrilSolutions, company registration number 63560073.</p>
+
+<h2>1. In-app deletion (recommended)</h2>
+<ol>
+<li>Open the DeCo app and sign in.</li>
+<li>Tap the <strong>⚙ Settings</strong> icon in the top-right corner of the home screen.</li>
+<li>Scroll to the bottom and tap <strong>"Delete account"</strong>.</li>
+<li>Read the warning, type your phone number to confirm, and tap <strong>"Permanently delete account"</strong>.</li>
+<li>After confirmation you are signed out automatically and returned to the registration screen.</li>
+</ol>
+
+<h2>2. Deletion by email</h2>
+<p>If for any reason you cannot access the app, send an email to <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong> requesting deletion. Include:</p>
+<ul>
+<li>The Client ID you used in the app</li>
+<li>The phone number you used to sign in</li>
+</ul>
+<p>Response and confirmation within <strong>30 days</strong>, per GDPR and the Serbian Personal Data Protection Act.</p>
+
+<h2>3. What is DELETED</h2>
+<ul>
+<li>Your phone number is removed from our database (replaced with <code>NULL</code>)</li>
+<li>Push token is removed from Google FCM</li>
+<li>Refresh tokens are revoked and all sessions terminated</li>
+<li>All your devices are deregistered</li>
+</ul>
+
+<h2>4. What is RETAINED</h2>
+<div class="warn">
+<p><strong>Important:</strong> Certain data is retained as required by legal retention obligations — we cannot lawfully delete it before those periods expire.</p>
+</div>
+
+<table>
+<tr><th>Data</th><th>Retention period</th><th>Legal basis</th></tr>
+<tr><td>Debt, credit, payment records</td><td>5–10 years</td><td>Banking Act, Consumer Protection Act, NBS regulations</td></tr>
+<tr><td>Operator-chat message history</td><td>5 years</td><td>NBS regulations (collection-process communication)</td></tr>
+<tr><td>Promise-to-Pay commitments</td><td>5 years</td><td>Accounting regulations</td></tr>
+<tr><td>Audit logs (sign-in/sign-out time, IP)</td><td>1 year</td><td>Security audit trail (legitimate interest)</td></tr>
+</table>
+
+<p>After legal retention expires, this data is deleted or anonymized to the extent possible.</p>
+
+<h2>5. After deletion</h2>
+<p>Deletion is <strong>permanent and cannot be undone</strong>. If you change your mind later and want to use DeCo again, register as a new user — a fresh account will be created.</p>
+
+<h2>6. Questions</h2>
+<p>For any questions about account deletion or our privacy policy: <strong><a href="mailto:privacy@uril.rs">privacy@uril.rs</a></strong></p>
+
+<p>Full Privacy Policy: <a href="../privacy-policy/">DeCo — Privacy Policy</a></p>
+</section>
+
+</main>
+
+<script>
+  function showLang(lang) {
+    document.getElementById('sr').hidden = (lang !== 'sr');
+    document.getElementById('en').hidden = (lang !== 'en');
+    document.documentElement.lang = lang;
+    document.title = lang === 'en'
+      ? 'DeCo — Account Deletion'
+      : 'DeCo — Brisanje naloga';
+  }
+  function fromHash() {
+    const h = (location.hash || '#sr').replace('#', '');
+    showLang(h === 'en' ? 'en' : 'sr');
+  }
+  window.addEventListener('hashchange', fromHash);
+  fromHash();
+</script>
+
+</body>
+</html>
