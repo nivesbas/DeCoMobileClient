@@ -10,6 +10,7 @@ import { setSuppressChatBanners } from '../services/pushNotificationService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { MessageHistoryItem } from '../types/api';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 const POLL_INTERVAL_MS = 5000; // refresh every 5 seconds
 
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function MessagesScreen({ onBack }: Props) {
+  useScreenSecurity();
   const [messages, setMessages] = useState<MessageHistoryItem[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);

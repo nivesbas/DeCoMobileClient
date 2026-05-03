@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   customerId: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function OtpScreen({ customerId, phoneNumber, onBack }: Props) {
+  useScreenSecurity();
   const { verifyOtp, register } = useAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);

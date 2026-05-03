@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   onBack: () => void;
@@ -19,6 +20,7 @@ interface Props {
  * a security control.
  */
 export default function DeleteAccountScreen({ onBack, onSuccess }: Props) {
+  useScreenSecurity();
   const { phoneNumber, deleteAccount } = useAuth();
   const [confirmPhone, setConfirmPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);

@@ -6,6 +6,7 @@ import { getDebtDetail } from '../services/debtService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { DebtDetail } from '../types/api';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   loanId: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function DebtDetailScreen({ loanId, onBack, onPay }: Props) {
+  useScreenSecurity();
   const [data, setData] = useState<DebtDetail | null>(null);
   const [loading, setLoading] = useState(true);
 

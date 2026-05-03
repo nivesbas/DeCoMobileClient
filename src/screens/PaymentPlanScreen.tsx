@@ -7,6 +7,7 @@ import { getPaymentPlan } from '../services/paymentPlanService';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { PaymentPlan, PaymentPlanInstallment } from '../types/api';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   lid: number;
@@ -21,6 +22,7 @@ const STATUS_CONFIG: Record<number, { label: () => string; color: string; bg: st
 };
 
 export default function PaymentPlanScreen({ lid, onBack }: Props) {
+  useScreenSecurity();
   const [plan, setPlan] = useState<PaymentPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

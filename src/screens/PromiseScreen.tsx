@@ -8,6 +8,7 @@ import { checkPromiseEligibility, createPromise } from '../services/promiseServi
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { PtpLoanEligibility } from '../types/api';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   onBack: () => void;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function PromiseScreen({ onBack, onSuccess, preselectedLoanId }: Props) {
+  useScreenSecurity();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [loans, setLoans] = useState<PtpLoanEligibility[]>([]);

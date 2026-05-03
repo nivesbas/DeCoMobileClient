@@ -7,6 +7,7 @@ import Constants from 'expo-constants';
 import { useAuth } from '../hooks/useAuth';
 import { t, getLocale, setLocale } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 type Locale = 'sr' | 'en';
 
@@ -18,6 +19,7 @@ interface Props {
 const PRIVACY_POLICY_URL = 'https://nivesbas.github.io/DeCoMobileClient/privacy-policy/';
 
 export default function SettingsScreen({ onBack, onDeleteAccount }: Props) {
+  useScreenSecurity();
   const { logout } = useAuth();
   const [locale, setCurrentLocale] = useState<Locale>(getLocale() as Locale);
 

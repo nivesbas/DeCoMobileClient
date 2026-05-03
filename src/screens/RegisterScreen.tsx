@@ -7,12 +7,14 @@ import { useAuth } from '../hooks/useAuth';
 import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import { tenantLogo } from '../tenant/tenantAssets';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   onOtpSent: (customerId: string, phoneNumber: string) => void;
 }
 
 export default function RegisterScreen({ onOtpSent }: Props) {
+  useScreenSecurity();
   const { register } = useAuth();
   const [customerId, setCustomerId] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');

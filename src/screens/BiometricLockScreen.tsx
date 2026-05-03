@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 interface Props {
   onSuccess: () => void;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function BiometricLockScreen({ onSuccess, onFallback, customerName }: Props) {
+  useScreenSecurity();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [biometricType, setBiometricType] = useState<string>('biometrics');

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from './src/hooks/useAuth';
+import { useSecurity } from './src/hooks/useSecurity';
 import { initTranslations } from './src/i18n/translations';
 import { setupNotificationHandlers } from './src/services/pushNotificationService';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -34,6 +35,11 @@ function AppContent() {
   const { isLoading, isAuthenticated, isRestoredSession, logout, customerId } = useAuth();
   const [screen, setScreen] = useState<Screen>({ name: 'register' });
   const [biometricVerified, setBiometricVerified] = useState(false);
+  // Idle/background lock — separate from `biometricVerified` so the
+  // restored-session boot gate stays a one-shot. When the inactivity timer
+  // fires or the app returns from a long background, we flip this and the
+  // BiometricLockScreen takes over until the user re-authenticates.
+  const [securityLocked, setSecurityLocked] = useState(false);
 
   // History lives in a ref — it never needs to trigger a re-render. Keeping it
   // out of state also lets navigate/goBack stay pure (no setState-in-updater).
@@ -43,6 +49,19 @@ function AppContent() {
 
   // Load remote translations on app start
   useEffect(() => { initTranslations('sr'); }, []);
+
+  const handleSecurityLock = useCallback(() => {
+    setSecurityLocked(true);
+  }, []);
+
+  // Inactivity timeout (5 min) + background re-lock (30 s). Only armed once
+  // the user is fully past auth + restored-session biometric — otherwise the
+  // boot biometric screen would itself be locked behind a lock screen.
+  const securityArmed = isAuthenticated && (!isRestoredSession || biometricVerified);
+  const { resetInactivityTimer } = useSecurity({
+    onLock: handleSecurityLock,
+    enabled: securityArmed && !securityLocked,
+  });
 
   const navigate = (next: Screen) => {
     historyRef.current.push(screenRef.current);
@@ -124,92 +143,123 @@ function AppContent() {
     );
   }
 
-  // ── Authenticated screens ─────────────────────────────────────
-  if (screen.name === 'debtDetail') {
+  // ── Idle / background re-lock ────────────────────────────────
+  // Triggered by useSecurity when the inactivity timer fires or the app
+  // returns from a long background. Sits on top of the authenticated state —
+  // success just clears the gate, fallback drops the session entirely.
+  if (securityLocked) {
     return (
-      <DebtDetailScreen
-        loanId={screen.loanId}
-        onBack={goBack}
-        onPay={(loanId) => navigate({ name: 'paymentQr', loanId })}
-      />
-    );
-  }
-
-  if (screen.name === 'paymentQr') {
-    return (
-      <PaymentQrScreen
-        loanId={screen.loanId}
-        onBack={goBack}
-      />
-    );
-  }
-
-  if (screen.name === 'messages') {
-    return (
-      <MessagesScreen
-        onBack={goBack}
-      />
-    );
-  }
-
-  if (screen.name === 'promise') {
-    return (
-      <PromiseScreen
-        onBack={goBack}
-        onSuccess={() => setScreen({ name: 'home' })}
-        preselectedLoanId={screen.loanId}
-      />
-    );
-  }
-
-  if (screen.name === 'paymentPlan') {
-    return (
-      <PaymentPlanScreen
-        lid={screen.lid}
-        onBack={goBack}
-      />
-    );
-  }
-
-  if (screen.name === 'settings') {
-    return (
-      <SettingsScreen
-        onBack={goBack}
-        onDeleteAccount={() => navigate({ name: 'deleteAccount' })}
-      />
-    );
-  }
-
-  if (screen.name === 'deleteAccount') {
-    return (
-      <DeleteAccountScreen
-        onBack={goBack}
-        // After successful deletion the auth state has already been cleared in
-        // the deleteAccount() callback in useAuth — auth redirect will surface
-        // RegisterScreen on the next render. We still reset history + screen
-        // so an Android back press can't surface the deleted-account state.
-        onSuccess={() => {
+      <BiometricLockScreen
+        onSuccess={() => setSecurityLocked(false)}
+        onFallback={async () => {
+          await logout();
+          setSecurityLocked(false);
+          setBiometricVerified(false);
           historyRef.current = [];
           setScreen({ name: 'register' });
         }}
+        customerName={customerId ?? undefined}
       />
     );
   }
 
-  // Default: Home
+  // ── Authenticated screens ─────────────────────────────────────
+  // Wrap in a single touch-listening View so any user interaction resets the
+  // inactivity timer. onTouchStart bubbles from every ScrollView/Pressable
+  // descendant — a tap or a swipe anywhere counts as "still in use."
+  const renderAuthenticatedScreen = (): React.ReactNode => {
+    if (screen.name === 'debtDetail') {
+      return (
+        <DebtDetailScreen
+          loanId={screen.loanId}
+          onBack={goBack}
+          onPay={(loanId) => navigate({ name: 'paymentQr', loanId })}
+        />
+      );
+    }
+
+    if (screen.name === 'paymentQr') {
+      return (
+        <PaymentQrScreen
+          loanId={screen.loanId}
+          onBack={goBack}
+        />
+      );
+    }
+
+    if (screen.name === 'messages') {
+      return (
+        <MessagesScreen
+          onBack={goBack}
+        />
+      );
+    }
+
+    if (screen.name === 'promise') {
+      return (
+        <PromiseScreen
+          onBack={goBack}
+          onSuccess={() => setScreen({ name: 'home' })}
+          preselectedLoanId={screen.loanId}
+        />
+      );
+    }
+
+    if (screen.name === 'paymentPlan') {
+      return (
+        <PaymentPlanScreen
+          lid={screen.lid}
+          onBack={goBack}
+        />
+      );
+    }
+
+    if (screen.name === 'settings') {
+      return (
+        <SettingsScreen
+          onBack={goBack}
+          onDeleteAccount={() => navigate({ name: 'deleteAccount' })}
+        />
+      );
+    }
+
+    if (screen.name === 'deleteAccount') {
+      return (
+        <DeleteAccountScreen
+          onBack={goBack}
+          // After successful deletion the auth state has already been cleared in
+          // the deleteAccount() callback in useAuth — auth redirect will surface
+          // RegisterScreen on the next render. We still reset history + screen
+          // so an Android back press can't surface the deleted-account state.
+          onSuccess={() => {
+            historyRef.current = [];
+            setScreen({ name: 'register' });
+          }}
+        />
+      );
+    }
+
+    // Default: Home
+    return (
+      <HomeScreen
+        onNavigate={(name: string, params?: any) => {
+          const screenMap: Record<string, Screen> = {
+            DebtDetail: { name: 'debtDetail', loanId: params?.loanId },
+            Promise: { name: 'promise', loanId: params?.loanId },
+            Messages: { name: 'messages' },
+            PaymentPlan: { name: 'paymentPlan', lid: params?.lid },
+            Settings: { name: 'settings' },
+          };
+          navigate(screenMap[name] ?? { name: 'home' });
+        }}
+      />
+    );
+  };
+
   return (
-    <HomeScreen
-      onNavigate={(name: string, params?: any) => {
-        const screenMap: Record<string, Screen> = {
-          DebtDetail: { name: 'debtDetail', loanId: params?.loanId },
-          Promise: { name: 'promise', loanId: params?.loanId },
-          Messages: { name: 'messages' },
-          PaymentPlan: { name: 'paymentPlan', lid: params?.lid },
-          Settings: { name: 'settings' },
-        };
-        navigate(screenMap[name] ?? { name: 'home' });
-      }}
-    />
+    <View style={{ flex: 1 }} onTouchStart={resetInactivityTimer}>
+      {renderAuthenticatedScreen()}
+    </View>
   );
 }
 

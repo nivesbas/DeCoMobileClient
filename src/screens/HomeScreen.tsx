@@ -8,6 +8,7 @@ import { checkPromiseEligibility } from '../services/promiseService';
 import { t, getLocale, setLocale } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { DebtSummary, DebtItem, PtpLoanEligibility } from '../types/api';
+import { useScreenSecurity } from '../hooks/useScreenSecurity';
 
 type Locale = 'sr' | 'en';
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function HomeScreen({ onNavigate }: Props) {
+  useScreenSecurity();
   const [data, setData] = useState<DebtSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
