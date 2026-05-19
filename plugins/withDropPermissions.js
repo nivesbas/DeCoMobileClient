@@ -4,10 +4,17 @@
 // still inject extras — so we layer this on top using the AAPT manifest-merger
 // `tools:node="remove"` directive.
 //
-// Targeted removals (audit 2026-04-26):
+// Targeted removals (audit 2026-04-26, extended 2026-05-19):
 //   READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE — never accessed; dangerous-level on legacy Android.
 //   SYSTEM_ALERT_WINDOW                            — overlay perm, raises Play review flags.
 //   USE_FINGERPRINT                                — deprecated since API 28; USE_BIOMETRIC covers it.
+//   READ_MEDIA_IMAGES                              — auto-pulled by expo-notifications for
+//                                                    notification image attachments (Android 13+).
+//                                                    We only show text notifications, so this perm
+//                                                    is dead weight. Worse, leaving it triggers the
+//                                                    Play Console "Photo and Video Permissions"
+//                                                    declaration form which adds a separate review
+//                                                    gate. Removing it is cleaner than declaring it.
 const { withAndroidManifest } = require('@expo/config-plugins');
 
 const PERMISSIONS_TO_REMOVE = [
@@ -15,6 +22,7 @@ const PERMISSIONS_TO_REMOVE = [
   'android.permission.WRITE_EXTERNAL_STORAGE',
   'android.permission.SYSTEM_ALERT_WINDOW',
   'android.permission.USE_FINGERPRINT',
+  'android.permission.READ_MEDIA_IMAGES',
 ];
 
 module.exports = function withDropPermissions(config) {
