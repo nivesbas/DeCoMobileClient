@@ -249,9 +249,11 @@ export default function HomeScreen({ onNavigate }: Props) {
           >
             <Text style={styles.settingsIcon}>⚙</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleCloseApp} style={styles.closeButton}>
-            <Text style={styles.closeIcon}>✕</Text>
-          </TouchableOpacity>
+          {/* Custom "Close app" (✕) button removed in 1.0.1:
+              Android-standard exit is the hardware back gesture which we
+              already handle below (handleCloseApp with confirm dialog).
+              Play Store reviewer flagged the custom button as a non-standard,
+              hard-to-discover UI element in the v1.0.0 review. */}
         </View>
       </View>
 

@@ -38,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: tenant.appName,
     slug: 'DeCoClientApp',
-    version: '1.0.0',
+    version: '1.0.1',
     orientation: 'portrait',
     icon: `${assetsDir}/icon.png`,
     userInterfaceStyle: 'light',
@@ -57,6 +57,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     android: {
       package: tenant.bundleId,
+      // Increment versionCode on every Play Store upload — Play rejects
+      // duplicates. 1 = first Play submission (rejected, see 2026-05-18
+      // Broken Functionality review notice). 2 = chat keyboard fix +
+      // removed non-standard ✕ exit button.
+      versionCode: 2,
       googleServicesFile: googleServicesRel,
       adaptiveIcon: {
         foregroundImage: `${assetsDir}/adaptive-icon.png`,

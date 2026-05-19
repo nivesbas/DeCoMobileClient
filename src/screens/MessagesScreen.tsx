@@ -11,6 +11,7 @@ import { t } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { MessageHistoryItem } from '../types/api';
 import { useScreenSecurity } from '../hooks/useScreenSecurity';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const POLL_INTERVAL_MS = 5000; // refresh every 5 seconds
 
@@ -20,6 +21,7 @@ interface Props {
 
 export default function MessagesScreen({ onBack }: Props) {
   useScreenSecurity();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<MessageHistoryItem[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -193,7 +195,13 @@ export default function MessagesScreen({ onBack }: Props) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior="padding"
+      // iOS: `padding` shifts content up smoothly. Android: leave behavior
+      // undefined so the system's adjustResize handles layout — `padding`
+      // here would double-up with the OS-provided keyboard inset and hide
+      // the input bar under the 3-button nav on phones without gesture nav
+      // (see Play Store 1.0.0 rejection: chat input was visually behind
+      // the system nav bar because of edgeToEdge + padding behavior).
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       {/* Header bar */}
@@ -219,7 +227,16 @@ export default function MessagesScreen({ onBack }: Props) {
         }
       />
 
-      <View style={styles.inputBar}>
+      <View
+        style={[
+          styles.inputBar,
+          // Lift the input bar above the system navigation bar on Android
+          // (3-button nav has insets.bottom > 0; gesture nav has 0 or very
+          // small inset). edgeToEdgeEnabled draws under the nav by default,
+          // so without this the input is visually under the nav buttons.
+          { paddingBottom: (Platform.OS === 'ios' ? SPACING.lg : SPACING.sm) + insets.bottom },
+        ]}
+      >
         <TextInput
           style={styles.input}
           value={inputText}
