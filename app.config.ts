@@ -60,8 +60,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // Increment versionCode on every Play Store upload — Play rejects
       // duplicates. 1 = first Play submission (rejected, see 2026-05-18
       // Broken Functionality review notice). 2 = chat keyboard fix +
-      // removed non-standard ✕ exit button.
-      versionCode: 2,
+      // removed non-standard ✕ exit button (got tagged on Play's
+      // READ_MEDIA_IMAGES manifest check before final submit). 3 =
+      // same fixes + READ_MEDIA_IMAGES stripped via withDropPermissions.
+      versionCode: 3,
       googleServicesFile: googleServicesRel,
       adaptiveIcon: {
         foregroundImage: `${assetsDir}/adaptive-icon.png`,
