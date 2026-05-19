@@ -59,6 +59,13 @@ export default function SettingsScreen({ onBack, onDeleteAccount }: Props) {
     }
   };
 
+  const handleCloseApp = () => {
+    Alert.alert(t('close_app'), t('close_app_confirm'), [
+      { text: t('no'), style: 'cancel' },
+      { text: t('yes'), style: 'default', onPress: () => BackHandler.exitApp() },
+    ]);
+  };
+
   const appVersion = Constants.expoConfig?.version ?? '—';
 
   return (
@@ -98,6 +105,11 @@ export default function SettingsScreen({ onBack, onDeleteAccount }: Props) {
         {/* Logout */}
         <TouchableOpacity style={[styles.row, styles.rowAccent]} onPress={handleLogout}>
           <Text style={[styles.rowLabel, { color: COLORS.primary }]}>{t('settings_logout')}</Text>
+        </TouchableOpacity>
+
+        {/* Close app — explicit exit for users who don't use Android back gesture */}
+        <TouchableOpacity style={styles.row} onPress={handleCloseApp}>
+          <Text style={[styles.rowLabel, { color: COLORS.primary }]}>{t('close_app')}</Text>
         </TouchableOpacity>
 
         {/* Delete account — danger zone */}

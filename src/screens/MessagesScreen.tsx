@@ -32,7 +32,10 @@ export default function MessagesScreen({ onBack }: Props) {
   const fetchMessages = useCallback(async (silent = false) => {
     try {
       const result = await getMessageHistory(50);
-      setMessages(result.messages.reverse());
+      // API returns newest-first; we render with an inverted FlatList so
+      // the natural data order (newest → oldest) maps to visual layout
+      // (newest at bottom). No .reverse() needed.
+      setMessages(result.messages);
     } catch (error: any) {
       if (!silent) {
         Alert.alert('', error.message ?? t('error_generic'));
@@ -142,11 +145,9 @@ export default function MessagesScreen({ onBack }: Props) {
         timestamp: result.timestamp,
         isRead: false,
       };
-      setMessages(prev => [...prev, newMessage]);
-
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      // Inverted FlatList: prepend so the new message lands at the visual
+      // bottom (index 0 in data = bottom of screen when inverted=true).
+      setMessages(prev => [newMessage, ...prev]);
     } catch (error: any) {
       Alert.alert('', error.message ?? t('error_generic'));
       setInputText(text);
@@ -219,7 +220,11 @@ export default function MessagesScreen({ onBack }: Props) {
         keyExtractor={item => item.messageId}
         renderItem={renderMessage}
         contentContainerStyle={styles.messageList}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+        // Inverted FlatList = idiomatic RN chat pattern. The newest item
+        // (data[0]) lands at the visual bottom by default; no scrollToEnd
+        // race with lazy-rendered rows that caused earlier polls/sends to
+        // sometimes land mid-history.
+        inverted
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>{t('messages_empty')}</Text>
@@ -294,8 +299,8 @@ const styles = StyleSheet.create({
   messageList: {
     padding: SPACING.md,
     paddingBottom: SPACING.sm,
-    flexGrow: 1,
-    justifyContent: 'flex-end',
+    // No flexGrow/justifyContent — inverted FlatList places items from
+    // the bottom upward natively. Adding flex-end here would re-invert.
   },
   messageBubble: {
     maxWidth: '80%',

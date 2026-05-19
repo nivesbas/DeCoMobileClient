@@ -9,6 +9,7 @@ import { t, getLocale, setLocale } from '../i18n/translations';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import type { DebtSummary, DebtItem, PtpLoanEligibility } from '../types/api';
 import { useScreenSecurity } from '../hooks/useScreenSecurity';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Locale = 'sr' | 'en';
 
@@ -18,6 +19,7 @@ interface Props {
 
 export default function HomeScreen({ onNavigate }: Props) {
   useScreenSecurity();
+  const insets = useSafeAreaInsets();
   const [data, setData] = useState<DebtSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -290,9 +292,10 @@ export default function HomeScreen({ onNavigate }: Props) {
         }
       />
 
-      {/* Floating Messages button */}
+      {/* Floating Messages button — bottom lifted above 3-button Android
+          nav (edgeToEdge draws under it; safe-area inset adds the lift). */}
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: 32 + insets.bottom }]}
         onPress={() => onNavigate('Messages')}
         activeOpacity={0.8}
       >
